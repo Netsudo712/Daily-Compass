@@ -520,7 +520,7 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button> <span class="muted small" id="notifyStatus"></span>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v27</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v28</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
    <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Data</div><p class="muted small">Clear saved checkmarks and one-off custom tasks. Your weekly layout and streaks will stay saved.</p><button class="danger" id="clear">Clear saved checkmarks and custom tasks</button>
@@ -676,7 +676,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function formatTime(t){if(!t)return '';if(militaryTime)return t;let [h,m]=t.split(':').map(Number);const suffix=h>=12?'PM':'AM',hour=h%12||12;return hour+':'+String(m).padStart(2,'0')+' '+suffix}
 function formatRange(a,b){return formatTime(a)+'–'+formatTime(b)}
 function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:!militaryTime});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));$(b.dataset.tab).classList.add('active');if(b.dataset.tab==='workouts'){if(activeWorkoutId){$('workoutDetail').style.display='none';activeWorkoutId=null;document.querySelector('.workout-subtabs').style.display='grid';}showWorkoutPage(activeWorkoutPage);renderWorkoutLibrary();renderWorkoutPackages();renderTodayWorkout();renderTrainingWeek();}}));
+document.querySelectorAll('#bottomTabs .tab[data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#bottomTabs .tab,.section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('#bottomTabs .tab').forEach(x=>x.classList.toggle('active',x===b));$(b.dataset.tab).classList.add('active');if(b.dataset.tab==='workouts'){if(activeWorkoutId){$('workoutDetail').style.display='none';activeWorkoutId=null;document.querySelector('.workout-subtabs').style.display='grid';}showWorkoutPage(activeWorkoutPage);renderWorkoutLibrary();renderWorkoutPackages();renderTodayWorkout();renderTrainingWeek();}}));
 function restoreUpdateView(){
  let saved=null;
  try{saved=JSON.parse(sessionStorage.getItem('dc_update_view')||'null');sessionStorage.removeItem('dc_update_view')}catch(_){}
@@ -714,7 +714,7 @@ let workoutChecks=JSON.parse(localStorage.getItem('dc_workout_checks')||'{}');
 function saveWorkoutChecks(){localStorage.setItem('dc_workout_checks',JSON.stringify(workoutChecks))}
 function workoutCheckKey(day,id){return localDateKey(addDaysKey(getMondayKey(),day))+'_'+id}
 function getMondayKey(){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return localDateKey(d)}
-function hasDailyExerciseScheduled(day){const tasks=weekPlan[day]?.tasks||[];return tasks.some(t=>t.id==='d10'&&weekPlan[day].enabled?.d10!==false)||tasks.some(t=>/exercise|workout|training/i.test(t.name||'' )&&!t.workout)}
+function hasDailyExerciseScheduled(day){const exerciseGroup=ROUTINE_GROUPS.find(g=>g.name==='Exercise');if(!exerciseGroup||!weekPlan[day])return false;return routineIds(exerciseGroup).some(id=>weekPlan[day].enabled?.[id]!==false)}
 const packageDefaults=()=>({items:[]});
 DAY_NAMES.forEach((_,i)=>{if(!workoutPackages[i])workoutPackages[i]=packageDefaults()});
 WORKOUT_LIBRARY.forEach(w=>{
