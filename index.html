@@ -86,6 +86,51 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 .day-actions{display:flex;gap:6px;align-items:center;margin-top:8px}
 .day-actions button{font-size:11px;padding:6px 8px}
 @media(max-width:600px){.week-planner{grid-template-columns:1fr}.week-day{padding:11px}.plan-task select{max-width:105px}}
+
+/* Spreadsheet-inspired interface refresh */
+:root{--bg:#0b1220;--panel:#101b2b;--panel2:#17263a;--line:#304158;--accent:#8bbcff}
+body{background:#0b1220}
+header{padding-top:20px;padding-bottom:10px}
+main{max-width:1040px}
+.card{background:#101b2b;border:1px solid #304158;border-radius:10px;padding:14px;box-shadow:none}
+.tabs{gap:0;border-bottom:1px solid var(--line);padding-bottom:8px}
+.tab{border-radius:7px;margin-right:5px;padding:8px 12px}
+.section .card{margin-bottom:10px}
+.item{display:grid;grid-template-columns:34px 112px minmax(0,1fr);align-items:center;gap:8px;padding:9px 7px;border-bottom:1px solid #29384c}
+.item:nth-child(even){background:rgba(255,255,255,.018)}
+.item input{margin:0 auto;width:20px;height:20px}
+.time{min-width:0;font-variant-numeric:tabular-nums}
+.task{font-size:14px}
+.detail{font-size:12px}
+.row input,.row select,.streak-controls select,.streak-controls input{border-radius:7px;background:#0b1523}
+button{border-radius:7px}
+.routine-scroll{border:1px solid var(--line);border-radius:8px}
+.routine-table{min-width:610px;font-size:13px}
+.routine-table th{position:sticky;top:0;background:#1a2a40;color:#cbd8e8;font-weight:650}
+.routine-table th,.routine-table td{border-right:1px solid #26374d;border-bottom:1px solid #26374d;padding:9px 8px}
+.routine-table th:first-child,.routine-table td:first-child{min-width:210px}
+.routine-table td{background:rgba(10,20,34,.45)}
+.routine-table tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+.routine-table input{width:19px;height:19px;cursor:pointer}
+.routine-table input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.subject-cell{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.icon-button{padding:2px 8px;line-height:1.4;font-size:18px}
+.routine-table .activity-hint{font-size:10px}
+.week-day{border-radius:8px;background:#101b2b}
+.week-day-head{padding-bottom:6px;border-bottom:1px solid var(--line)}
+.plan-task{padding:7px 3px}
+.streak-stat{border-radius:8px}
+@media(max-width:600px){
+ header{padding:17px 14px 8px}
+ main{padding-left:10px;padding-right:10px}
+ .card{padding:11px}
+ .item{grid-template-columns:30px 84px minmax(0,1fr);gap:6px}
+ .time{font-size:10px}
+ .task{font-size:13px}
+ .routine-table th:first-child,.routine-table td:first-child{min-width:170px}
+ .tabs{overflow-x:auto;flex-wrap:nowrap}
+ .tab{white-space:nowrap;font-size:13px;padding:8px 10px}
+}
 </style>
 </head>
 <body>
@@ -113,14 +158,12 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 </section>
 <section class="section" id="core">
  <div class="card">
-  <div class="kicker">Build your routine</div><h3>What needs to be part of each day?</h3>
-  <p class="muted small">Turn activities on for the days you need them. Work uses the shifts saved in Settings; the rest of your routine is automatically arranged around work and the other selected activities.</p>
-  <div class="routine-scroll"><table class="routine-table"><thead><tr><th>Activity</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody id="routineMatrix"></tbody></table></div>
-  <div class="kicker" style="margin-top:18px">Add your own activity</div>
-  <div class="row" style="margin:10px 0"><input id="coreName" type="text" placeholder="e.g. Card business, study, errands"><input id="coreDuration" type="number" min="10" max="480" step="5" value="60" style="width:100px" aria-label="Duration in minutes"><span class="muted small">minutes</span></div>
-  <div class="core-days" id="coreDayChoices"></div>
-  <button class="primary" id="addCore" style="margin-top:10px">Add activity to routine</button>
-  <div id="coreList" style="margin-top:14px"></div>
+  <div class="kicker">Core subject checklist</div><h3>Your activity library</h3>
+  <p class="muted small">Each row is an activity you can reuse. Tick the days it belongs to; unticked days stay out of your planner. Times are fitted around your other commitments and can still be moved in Week.</p>
+  <div class="routine-scroll"><table class="routine-table"><thead><tr><th>Core subject</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody id="routineMatrix"></tbody></table></div>
+  <div class="kicker" style="margin-top:18px">Add a subject to your library</div>
+  <div class="row" style="margin:10px 0"><input id="coreName" type="text" placeholder="Subject name, e.g. Card business, study, errands"><input id="coreDuration" type="number" min="10" max="480" step="5" value="60" style="width:100px" aria-label="Duration in minutes"><span class="muted small">minutes</span><button class="primary" id="addCore">＋ Add subject</button></div>
+  <p class="muted small">New subjects start with no days selected. Use the checkboxes in the table to activate them.</p>
  </div>
 </section>
 
@@ -428,12 +471,14 @@ const ROUTINE_GROUPS=[
 ];
 function routineIds(group){return group.work?['d4','d5','d6','d7','d8']:group.name==='Sleep'?['d18']:group.ids}
 function renderCore(){
- $('routineMatrix').innerHTML=ROUTINE_GROUPS.map(g=>{
-  const ids=routineIds(g);
+ const builtInRows=ROUTINE_GROUPS.map(g=>{
+  const ids=routineIds(g),key=g.work?'work':g.name;
   return '<tr class="'+(g.work?'work-row':'')+'"><td><span class="activity-name">'+g.name+'</span><span class="activity-hint">'+g.hint+'</span></td>'+
-   DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+g.name+' on '+n+'" data-routine-group="'+(g.work?'work':g.name)+'" data-routine-day="'+i+'" '+(g.work?(weekPlan[i].workday?'checked':''):(ids.some(id=>weekPlan[i].enabled?.[id]!==false)?'checked':''))+'></td>').join('')+'</tr>';
- }).join('')+
- coreSubjects.map(s=>'<tr><td><span class="activity-name">'+esc(s.name)+'</span><span class="activity-hint">Custom activity · '+s.duration+' min</span></td>'+DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+esc(s.name)+' on '+n+'" data-custom-core="'+s.id+'" data-custom-day="'+i+'" '+(s.days.includes(i)?'checked':'')+'></td>').join('')+'</tr>').join('');
+   DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+g.name+' on '+n+'" data-routine-group="'+key+'" data-routine-day="'+i+'" '+(g.work?(weekPlan[i].workday?'checked':''):(ids.some(id=>weekPlan[i].enabled?.[id]!==false)?'checked':''))+'></td>').join('')+'</tr>';
+ }).join('');
+ const customRows=coreSubjects.map(s=>'<tr><td><div class="subject-cell"><div><span class="activity-name">'+esc(s.name)+'</span><span class="activity-hint">Custom subject · '+s.duration+' min</span></div><button class="icon-button danger" title="Remove subject" aria-label="Remove '+esc(s.name)+'" data-delete-core="'+s.id+'">×</button></div></td>'+
+  DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+esc(s.name)+' on '+n+'" data-custom-core="'+s.id+'" data-custom-day="'+i+'" '+(s.days.includes(i)?'checked':'')+'></td>').join('')+'</tr>').join('');
+ $('routineMatrix').innerHTML=builtInRows+customRows;
  document.querySelectorAll('[data-routine-group]').forEach(el=>el.onchange=()=>{
   const i=Number(el.dataset.routineDay),group=ROUTINE_GROUPS.find(g=>(g.work?'work':g.name)===el.dataset.routineGroup);
   if(group.work)weekPlan[i].workday=el.checked;
@@ -445,16 +490,18 @@ function renderCore(){
   s.days=el.checked?[...new Set([...s.days,i])]:s.days.filter(x=>x!==i);
   saveCore();syncCoreTasks();autoFitDay(i);savePlan();render();renderWeek();renderCore();
  });
- $('coreDayChoices').innerHTML=DAY_NAMES.map((n,i)=>'<label class="core-day-option"><input type="checkbox" value="'+i+'" data-core-day> '+n.slice(0,3)+'</label>').join('');
- $('coreList').innerHTML=coreSubjects.length?coreSubjects.map(s=>'<div class="core-entry"><div><strong>'+esc(s.name)+'</strong><small>'+s.duration+' min · '+s.days.map(i=>DAY_NAMES[i].slice(0,3)).join(', ')+'</small></div><button class="danger" data-delete-core="'+s.id+'">Remove</button></div>').join(''):'<p class="muted small">No custom activities added.</p>';
- document.querySelectorAll('[data-delete-core]').forEach(b=>b.onclick=()=>{coreSubjects=coreSubjects.filter(s=>s.id!==b.dataset.deleteCore);saveCore();syncCoreTasks();autoFitAll();renderCore()});
+ document.querySelectorAll('[data-delete-core]').forEach(b=>b.onclick=()=>{
+  if(!confirm('Remove this subject from your library and weekly planner?'))return;
+  coreSubjects=coreSubjects.filter(s=>s.id!==b.dataset.deleteCore);saveCore();syncCoreTasks();autoFitAll();renderCore();
+ });
 }
 $('addCore').onclick=()=>{
- const name=$('coreName').value.trim(),durationMinutes=Number($('coreDuration').value),days=[...document.querySelectorAll('[data-core-day]:checked')].map(x=>Number(x.value));
- if(!name){alert('Give this core subject a name.');return;}
+ const name=$('coreName').value.trim(),durationMinutes=Number($('coreDuration').value);
+ if(!name){alert('Give this subject a name.');return;}
  if(!Number.isFinite(durationMinutes)||durationMinutes<10||durationMinutes>480){alert('Choose a duration between 10 and 480 minutes.');return;}
- if(!days.length){alert('Choose at least one day for this subject.');return;}
- coreSubjects.push({id:'cs'+Date.now(),name,duration:durationMinutes,days});saveCore();syncCoreTasks();autoFitAll();renderCore();$('coreName').value='';
+ if(coreSubjects.some(s=>s.name.toLowerCase()===name.toLowerCase())){alert('That subject is already in your library.');return;}
+ coreSubjects.push({id:'cs'+Date.now(),name,duration:durationMinutes,days:[]});
+ saveCore();syncCoreTasks();savePlan();renderCore();$('coreName').value='';
 };
 $('dailyDay').onchange=e=>{selectedDay=Number(e.target.value);render()};
 $('autoWeek').onclick=autoFitAll;
