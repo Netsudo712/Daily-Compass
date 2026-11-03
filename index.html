@@ -55,6 +55,13 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 .week-day-head strong{font-size:15px}
 .week-day-head label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .week-day-head input{accent-color:var(--green)}
+.core-days{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
+.core-day-option{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;color:var(--muted);font-size:13px}
+.core-day-option input,.shift-toggle input{accent-color:var(--green)}
+.core-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+.core-entry small{display:block;color:var(--muted);margin-top:3px}
+.shift-toggle{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13px}
+.shift-summary{font-size:12px;color:var(--accent);margin:3px 0 8px}
 .shift-editor{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:7px 0 9px;padding:8px;background:#111f32;border:1px solid var(--line);border-radius:9px}
 .shift-editor span{font-size:11px;color:var(--muted)}
 .shift-editor input{width:112px;min-width:0;background:#0b1728;border:1px solid var(--line);border-radius:7px;color:var(--text);padding:7px;font:inherit;font-size:12px}
@@ -79,9 +86,9 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
  <div class="card"><div class="kicker" id="todayLabel">Today</div><div class="big" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
  <div class="card"><div class="kicker">Today's progress</div><div class="big"><span id="doneCount">0</span>/<span id="totalCount">0</span></div><div class="track"><div class="fill" id="progress"></div></div><div class="muted small" id="percent">0% complete</div></div>
 </div>
-<div class="notice">Each day has its own work shift. Edit shifts in the Week tab; Daily Compass will place your commute and routine around that day’s hours.</div>
+<div class="notice">Set each day’s work shift in Settings, assign recurring priorities in Core Subjects, and use Week to move activities around. Your daily plan fits around the commitments you set.</div>
 <nav class="tabs">
- <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="streaks">Streaks</button><button class="tab" data-tab="settings">Settings</button>
+ <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="core">Core Subjects</button><button class="tab" data-tab="streaks">Streaks</button><button class="tab" data-tab="settings">Settings</button>
 </nav>
 <section class="section active" id="today">
  <div class="card"><div class="row" style="justify-content:space-between"><div><div class="kicker">Your daily plan</div><strong id="dailyHeading">Today’s plan</strong></div><select id="dailyDay" aria-label="Choose day"></select><button id="reset">Reset day</button></div><div id="schedule"></div></div>
@@ -89,10 +96,20 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 </section>
 <section class="section" id="week">
  <div class="card">
-  <div class="kicker">Your flexible week</div><h3>Move tasks where they fit</h3>
-  <p class="muted small">Drag a task onto another day, or use its Move control on iPhone. Daily Compass will automatically place it in an available time slot and avoid overlapping your work block.</p>
+  <div class="kicker">Your flexible week</div><h3>Weekly glance</h3>
+  <p class="muted small">See your work shifts and planned activities. Use Settings to edit shifts, Core Subjects to assign recurring priorities, or move any task between days here.</p>
   <div class="row" style="margin:12px 0"><button id="autoWeek" class="primary">Auto-fit all days</button><span class="muted small" id="fitMessage">Changes save automatically on this device.</span></div>
   <div id="weekPlanner" class="week-planner"></div>
+ </div>
+</section>
+<section class="section" id="core">
+ <div class="card">
+  <div class="kicker">Recurring priorities</div><h3>Core Subjects</h3>
+  <p class="muted small">Add the activities or priorities you want to make room for each week, choose the days they belong on, and set how much time they need. Daily Compass will fit them around your shifts and other commitments.</p>
+  <div class="row" style="margin:12px 0"><input id="coreName" type="text" placeholder="e.g. Card business, study, workout"><input id="coreDuration" type="number" min="10" max="480" step="5" value="60" style="width:100px" aria-label="Duration in minutes"><span class="muted small">minutes</span></div>
+  <div class="core-days" id="coreDayChoices"></div>
+  <button class="primary" id="addCore" style="margin-top:10px">Add core subject</button>
+  <div id="coreList" style="margin-top:14px"></div>
  </div>
 </section>
 
@@ -131,7 +148,7 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 </section>
 
 <section class="section" id="settings">
- <div class="card"><div class="kicker">Variable work schedule</div><h3>Adjust your usual work block</h3><div class="row"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save work hours</button></div><p class="muted small">This is the default shift used when creating a fresh weekly plan. Edit each day’s actual shift directly in the Week tab.</p>
+ <div class="card"><div class="kicker">Work schedule</div><h3>Edit each day's shift</h3><div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div><div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div><p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
@@ -278,6 +295,7 @@ $('notify').onclick=async()=>{if(!('Notification'in window)){$('notifyStatus').t
 function reminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;let d=new Date(),t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),key=todayKey()+'_'+t;if(notified.has(key))return;let all=defaults.map((x,i)=>({start:x[0],name:x[2]}));all[5].start=workStart;all[7].start=workEnd;all.forEach(x=>{if(x.start===t){new Notification('Daily Compass',{body:'Time for: '+x.name});notified.add(key)}})}
 
 const DAY_NAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+let coreSubjects=JSON.parse(localStorage.getItem('dc_core_subjects')||'[]');
 const WORK_IDS=new Set(['d4','d5','d6','d7','d8']);
 let selectedDay=(new Date().getDay()+6)%7;
 let weekPlan=JSON.parse(localStorage.getItem('dc_week_plan')||'null');
@@ -289,6 +307,13 @@ function makeDay(i){
 if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i)); const oldCustom=JSON.parse(localStorage.getItem('dc_custom')||'[]'); const todayIndex=(new Date().getDay()+6)%7; oldCustom.forEach((x,n)=>weekPlan[todayIndex].tasks.push({...x,id:'legacy'+n,duration:30,work:false}));}
 weekPlan.forEach((d,i)=>{if(!d||!Array.isArray(d.tasks))weekPlan[i]=makeDay(i);if(!d.workStart)d.workStart=workStart;if(!d.workEnd)d.workEnd=workEnd;});
 function savePlan(){localStorage.setItem('dc_week_plan',JSON.stringify(weekPlan))}
+function saveCore(){localStorage.setItem('dc_core_subjects',JSON.stringify(coreSubjects))}
+function syncCoreTasks(){
+ weekPlan.forEach((day,i)=>{
+  day.tasks=day.tasks.filter(t=>!String(t.id).startsWith('core-'));
+  coreSubjects.filter(s=>s.days.includes(i)).forEach(s=>day.tasks.push({id:'core-'+s.id,name:s.name,detail:'Core subject · '+s.duration+' min',start:'19:00',end:shift('19:00',s.duration),duration:s.duration,work:false,core:true}));
+ });
+}
 function dayTasks(i){return weekPlan[i].tasks.filter(t=>weekPlan[i].workday||!t.work)}
 function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function minToTime(n){n=Math.max(0,Math.min(1439,n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
@@ -336,8 +361,7 @@ function moveTask(from,id,to,index){
 function renderWeek(){
  $('weekPlanner').innerHTML=weekPlan.map((d,i)=>{
   let tasks=dayTasks(i);
-  return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><label><input type="checkbox" data-workday="'+i+'" '+(d.workday?'checked':'')+'> Workday</label></div>'+
-  (d.workday?'<div class="shift-editor"><span>Shift</span><input type="time" aria-label="'+DAY_NAMES[i]+' shift start" data-shift-start="'+i+'" value="'+d.workStart+'"><span>to</span><input type="time" aria-label="'+DAY_NAMES[i]+' shift end" data-shift-end="'+i+'" value="'+d.workEnd+'"></div>':'<div class="shift-summary">Day off · no work shift scheduled</div>')+
+  return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><span class="shift-summary">'+(d.workday?d.workStart+'–'+d.workEnd:'Day off')+'</span></div>'+
   tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+t.start+'–'+t.end+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
   '<div class="day-actions"><button data-view-day="'+i+'">Open day</button><button data-add-day="'+i+'">＋ Add task</button></div></div>';
  }).join('');
@@ -360,13 +384,45 @@ function renderWeek(){
   el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');try{let x=JSON.parse(e.dataTransfer.getData('text/plain'));moveTask(x.from,x.id,Number(el.dataset.dropDay),weekPlan[Number(el.dataset.dropDay)].tasks.length)}catch(_){}});
  });
 }
+function loadShiftEditor(){
+ const i=Number($('shiftDay').value),d=weekPlan[i];
+ $('shiftWorking').checked=d.workday;
+ $('workStart').value=d.workStart||workStart;
+ $('workEnd').value=d.workEnd||workEnd;
+ $('workStart').disabled=!d.workday;$('workEnd').disabled=!d.workday;
+ $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+d.workStart+'–'+d.workEnd:' is currently marked as a day off')+'.';
+}
+$('shiftDay').onchange=loadShiftEditor;
+$('shiftWorking').onchange=()=>{$('workStart').disabled=!$('shiftWorking').checked;$('workEnd').disabled=!$('shiftWorking').checked};
+$('saveWork').onclick=()=>{
+ const i=Number($('shiftDay').value),d=weekPlan[i],working=$('shiftWorking').checked;
+ const start=$('workStart').value,end=$('workEnd').value;
+ if(working&&(!start||!end||timeToMin(end)<=timeToMin(start))){alert('Please enter a valid shift with an end time later than its start.');return;}
+ d.workday=working;if(working){d.workStart=start;d.workEnd=end;}
+ autoFitDay(i);savePlan();render();renderWeek();loadShiftEditor();
+ $('shiftSaved').textContent=DAY_NAMES[i]+' saved: '+(working?start+'–'+end:'Day off')+'.';
+};
+function renderCore(){
+ $('coreDayChoices').innerHTML=DAY_NAMES.map((n,i)=>'<label class="core-day-option"><input type="checkbox" value="'+i+'" data-core-day> '+n.slice(0,3)+'</label>').join('');
+ $('coreList').innerHTML=coreSubjects.length?coreSubjects.map(s=>'<div class="core-entry"><div><strong>'+esc(s.name)+'</strong><small>'+s.duration+' min · '+s.days.map(i=>DAY_NAMES[i].slice(0,3)).join(', ')+'</small></div><button class="danger" data-delete-core="'+s.id+'">Remove</button></div>').join(''):'<p class="muted small">No core subjects yet. Add the recurring activities you want to protect time for.</p>';
+ document.querySelectorAll('[data-delete-core]').forEach(b=>b.onclick=()=>{coreSubjects=coreSubjects.filter(s=>s.id!==b.dataset.deleteCore);saveCore();syncCoreTasks();autoFitAll();renderCore()});
+}
+$('addCore').onclick=()=>{
+ const name=$('coreName').value.trim(),durationMinutes=Number($('coreDuration').value),days=[...document.querySelectorAll('[data-core-day]:checked')].map(x=>Number(x.value));
+ if(!name){alert('Give this core subject a name.');return;}
+ if(!Number.isFinite(durationMinutes)||durationMinutes<10||durationMinutes>480){alert('Choose a duration between 10 and 480 minutes.');return;}
+ if(!days.length){alert('Choose at least one day for this subject.');return;}
+ coreSubjects.push({id:'cs'+Date.now(),name,duration:durationMinutes,days});saveCore();syncCoreTasks();autoFitAll();renderCore();$('coreName').value='';
+};
 $('dailyDay').onchange=e=>{selectedDay=Number(e.target.value);render()};
 $('autoWeek').onclick=autoFitAll;
 $('addTask').onclick=()=>{let name=$('newTask').value.trim();if(!name)return;let t=$('newTime').value||'20:00';weekPlan[selectedDay].tasks.push({id:'u'+Date.now(),start:t,end:shift(t,30),name,detail:'One-off task',duration:30,work:false});autoFitDay(selectedDay);savePlan();$('newTask').value='';render();renderWeek()};
 $('reset').onclick=()=>{if(confirm('Reset this day’s checkmarks?')){let prefix=dayDateKey(selectedDay)+'_';Object.keys(checks).filter(k=>k.startsWith(prefix)).forEach(k=>delete checks[k]);localStorage.setItem('dc_checks',JSON.stringify(checks));render()}};
-$('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').value;if(!workStart||!workEnd){alert('Enter both work times.');return}localStorage.setItem('dc_start',workStart);localStorage.setItem('dc_end',workEnd);autoFitAll()};
 $('clear').onclick=()=>{if(confirm('Clear all saved checkmarks and custom tasks? Your weekly layout and streaks will stay saved.')){checks={};custom=[];localStorage.removeItem('dc_checks');localStorage.removeItem('dc_custom');localStorage.setItem('dc_checks','{}');render()}};
 $('dailyDay').value=String(selectedDay);
+syncCoreTasks();autoFitAll();renderCore();loadShiftEditor();
+
+
 autoFitAll();
 
 setInterval(clock,15000);setInterval(reminders,30000);
