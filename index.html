@@ -529,7 +529,7 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button> <span class="muted small" id="notifyStatus"></span>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v32</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v33</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
    <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Data</div><p class="muted small">Clear saved checkmarks and one-off custom tasks. Your weekly layout and streaks will stay saved.</p><button class="danger" id="clear">Clear saved checkmarks and custom tasks</button>
@@ -937,25 +937,33 @@ function renderPackageExerciseList(){
 }
 function addExerciseToPackage(exerciseId){
  const w=exerciseById(exerciseId);if(!w)return;
- const day=selectedPackageDay,items=workoutPackages[day].items;
+ const day=selectedWorkoutDay,items=workoutPackages[day].items;
  if(items.some(x=>x.exerciseId===exerciseId))return;
  const stats=workoutStats[exerciseId]||{};
  items.push({id:'pkg-'+exerciseId+'-'+day+'-'+Date.now(),exerciseId,mode:'working',weight:stats.targetWeight||'',reps:stats.targetReps||10,sets:3});
- selectedWorkoutDay=day;
+ setSelectedWorkoutDay(day);
  saveWorkoutData();
  renderWorkoutPackages();
  renderPackageExerciseList();
  renderTrainingWeek();
  renderTodayWorkout();
 }
+function setSelectedWorkoutDay(day){
+ const n=Number(day);
+ if(!Number.isInteger(n)||n<0||n>=DAY_NAMES.length)return;
+ selectedWorkoutDay=n;
+ selectedPackageDay=n;
+}
 function renderTrainingWeek(){
- $('trainingWeekTabs').innerHTML=DAY_NAMES.map((n,i)=>'<button class="workout-day-button '+(i===selectedWorkoutDay?'active':'')+'" data-training-day="'+i+'">'+n.slice(0,3)+'<span class="day-status">'+(workoutPackages[i].items.length?'● Package':'○ Empty')+'</span></button>').join('');
- document.querySelectorAll('[data-training-day]').forEach(b=>b.onclick=()=>{selectedWorkoutDay=Number(b.dataset.trainingDay);selectedPackageDay=selectedWorkoutDay;renderTrainingWeek();renderTodayWorkout();renderWorkoutPackages();renderPackageExerciseList()});
+ $('trainingWeekTabs').innerHTML=DAY_NAMES.map((n,i)=>'<button class="workout-day-button '+(i===selectedWorkoutDay?'active':'')+'" data-training-day="'+i+'">'+n.slice(0,3)+'<span class="day-status">'+((workoutPackages[i]?.items||[]).length?'● Package':'○ Empty')+'</span></button>').join('');
+ document.querySelectorAll('[data-training-day]').forEach(b=>b.onclick=()=>{
+  setSelectedWorkoutDay(b.dataset.trainingDay);
+  renderTrainingWeek();renderWorkoutPackages();renderPackageExerciseList();renderTodayWorkout();
+ });
  const items=workoutPackages[selectedWorkoutDay]?.items||[];
- $('trainingWeekSummary').innerHTML=items.length
-  ? DAY_NAMES[selectedWorkoutDay]+' · '+items.length+' exercises in package · <button type="button" class="primary" id="viewSelectedPackage">View '+DAY_NAMES[selectedWorkoutDay]+' package</button>'
+ $('trainingWeekSummary').textContent=items.length
+  ? DAY_NAMES[selectedWorkoutDay]+' · '+items.length+' exercises in package'
   : DAY_NAMES[selectedWorkoutDay]+' selected · No workout package set up yet.';
- const view=$('viewSelectedPackage');if(view)view.onclick=()=>{selectedPackageDay=selectedWorkoutDay;showWorkoutPage('workoutPackages');renderWorkoutPackages();renderPackageExerciseList()};
 }
 function showWorkoutPage(page){
  activeWorkoutPage=page;
@@ -965,23 +973,24 @@ function showWorkoutPage(page){
  if(page==='todayWorkout')renderTodayWorkout();
 }
 function renderTodayWorkout(){
- $('todayWorkoutHeading').textContent=DAY_NAMES[selectedWorkoutDay]+"'s workout";
- const items=workoutPackages[selectedWorkoutDay]?.items||[];
+ const day=selectedWorkoutDay;
+ const items=Array.isArray(workoutPackages[day]?.items)?workoutPackages[day].items:[];
+ $('todayWorkoutHeading').textContent=DAY_NAMES[day]+"'s workout";
  let html='';
  if(!items.length){
   html='<p class="muted small workout-checklist-empty">No exercises in this day’s package.</p>';
  }else{
-  const done=items.filter(it=>!!workoutChecks[workoutCheckKey(selectedWorkoutDay,it.id)]).length;
+  const done=items.filter(it=>!!workoutChecks[workoutCheckKey(day,it.id)]).length;
   html+='<div class="workout-checklist-summary"><span class="muted small">'+done+' of '+items.length+' completed</span><div class="track"><div class="fill" style="width:'+(done/items.length*100)+'%"></div></div></div>';
   html+='<div class="workout-checklist">'+items.map(it=>{
    const w=exerciseById(it.exerciseId);if(!w)return '';
-   const checked=!!workoutChecks[workoutCheckKey(selectedWorkoutDay,it.id)];
-   return '<div class="today-exercise '+(checked?'done':'')+'"><input type="checkbox" data-workout-check="'+it.id+'" '+(checked?'checked':'')+' aria-label="Complete '+escWorkout(w.name)+'"><button class="exercise-open" data-open-exercise="'+w.id+'"><strong class="today-exercise-name">'+escWorkout(w.name)+'</strong><small>'+escWorkout(it.sets)+' sets · '+escWorkout(it.reps)+' reps · '+(it.weight?escWorkout(it.weight)+' lb':'Weight not set')+'</small></button></div>';
+   const checked=!!workoutChecks[workoutCheckKey(day,it.id)];
+   return '<div class="today-exercise '+(checked?'done':'')+'"><input type="checkbox" data-workout-check="'+escWorkout(it.id)+'" '+(checked?'checked':'')+' aria-label="Complete '+escWorkout(w.name)+'"><button class="exercise-open" data-open-exercise="'+w.id+'"><strong class="today-exercise-name">'+escWorkout(w.name)+'</strong><small>'+escWorkout(it.sets)+' sets · '+escWorkout(it.reps)+' reps · '+(it.weight?escWorkout(it.weight)+' lb':'Weight not set')+'</small></button></div>';
   }).join('')+'</div>';
  }
  $('todayWorkoutContent').innerHTML=html;
  document.querySelectorAll('[data-workout-check]').forEach(el=>el.onchange=()=>{
-  workoutChecks[workoutCheckKey(selectedWorkoutDay,el.dataset.workoutCheck)]=el.checked;
+  workoutChecks[workoutCheckKey(day,el.dataset.workoutCheck)]=el.checked;
   saveWorkoutChecks();renderTodayWorkout();
  });
  bindExerciseOpenButtons();
@@ -1004,7 +1013,7 @@ function getRecommendation(item){
 }
 function renderWorkoutPackages(){
  $('packageDayTabs').innerHTML=DAY_NAMES.map((n,i)=>'<button class="'+(i===selectedPackageDay?'active':'')+'" data-package-day="'+i+'">'+n.slice(0,3)+'</button>').join('');
- document.querySelectorAll('[data-package-day]').forEach(b=>b.onclick=()=>{selectedPackageDay=Number(b.dataset.packageDay);selectedWorkoutDay=selectedPackageDay;renderWorkoutPackages();renderPackageExerciseList();renderTrainingWeek();renderTodayWorkout()});
+ document.querySelectorAll('[data-package-day]').forEach(b=>b.onclick=()=>{setSelectedWorkoutDay(b.dataset.packageDay);renderWorkoutPackages();renderPackageExerciseList();renderTrainingWeek();renderTodayWorkout()});
  const items=workoutPackages[selectedPackageDay].items;
  $('packageContent').innerHTML='<div class="muted small">'+DAY_NAMES[selectedPackageDay]+' · '+items.length+' selected exercise'+(items.length===1?'':'s')+'</div>'+
  (items.length?items.map((it,i)=>{const w=exerciseById(it.exerciseId),rec=getRecommendation(it);return '<div class="package-item"><div class="package-item-main"><button class="exercise-open package-exercise-open" data-open-exercise="'+w.id+'"><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · Tap to view guide & edit PR</small></button><div class="mode-switch"><button data-mode="'+it.id+'" data-value="working" class="'+(it.mode==='working'?'active':'')+'">Working Sets</button><button data-mode="'+it.id+'" data-value="overload" class="'+(it.mode==='overload'?'active':'')+'">Progressive Overload</button></div><div class="recommendation"><strong>'+(it.mode==='overload'?'Suggested session':'Working-set plan')+': '+(it.mode==='overload'?rec.weight:it.weight||'—')+' lb × '+(it.mode==='overload'?rec.reps:it.reps)+' reps</strong><div class="muted small">'+(it.mode==='overload'?rec.reason:'Comfortable repeatable load. Adjust to maintain controlled form.')+'</div></div><div class="package-fields"><label>Sets<input type="number" min="1" max="10" data-package-field="'+it.id+'" data-field="sets" value="'+it.sets+'"></label><label>Weight (lb)<input type="number" min="0" step=".5" data-package-field="'+it.id+'" data-field="weight" value="'+escWorkout(it.weight)+'"></label><label>Reps<input type="number" min="1" max="50" data-package-field="'+it.id+'" data-field="reps" value="'+it.reps+'"></label></div><button class="primary" style="margin-top:9px" data-log="'+it.id+'">Log completed sets</button></div><div class="package-item-controls"><button data-up="'+it.id+'" '+(i===0?'disabled':'')+'>↑</button><button data-down="'+it.id+'" '+(i===items.length-1?'disabled':'')+'>↓</button><button class="danger" data-remove="'+it.id+'">Remove</button></div></div>'}).join(''):'<p class="muted small">No exercises selected for this day yet.</p>')+
