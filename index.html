@@ -229,6 +229,44 @@ body[data-mode="light"] .item:nth-child(even){background:rgba(20,40,70,.025)}
 body[data-mode="light"] .item.done .task{color:#8a96a6}
 @media(max-width:600px){.app-header{padding:17px 14px 7px}.app-header h1{font-size:21px}.home-overview{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 13px;margin:8px 0 14px}.overview-time{font-size:31px}.overview-progress{min-width:118px}.appearance-controls{grid-template-columns:1fr}.accent-swatches{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.swatch-dot{width:32px;height:32px}}
 
+
+/* Stronger theme expression across controls, actions and highlights */
+:root{--accent-glow:color-mix(in srgb,var(--accent) 24%,transparent);--accent-wash:color-mix(in srgb,var(--accent) 11%,var(--panel));--accent-border:color-mix(in srgb,var(--accent) 48%,var(--line))}
+button,.tab,.zoom-btn{transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .18s}
+button:not(:disabled):hover{border-color:var(--accent-border);background:var(--accent-wash);box-shadow:0 3px 12px var(--accent-glow)}
+button:not(:disabled):active{transform:translateY(1px)}
+button.primary{background:linear-gradient(135deg,var(--accent-strong),color-mix(in srgb,var(--accent-strong) 72%,var(--accent)));border-color:var(--accent);color:#fff;box-shadow:0 3px 12px var(--accent-glow)}
+button.primary:not(:disabled):hover{background:var(--accent);border-color:var(--accent);color:#101827;box-shadow:0 5px 16px var(--accent-glow)}
+button.danger{background:color-mix(in srgb,#b94f68 17%,var(--panel));border-color:color-mix(in srgb,#c86a80 50%,var(--line))}
+.tab.active,.zoom-btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--text);box-shadow:inset 0 0 0 1px var(--accent-glow),0 3px 12px var(--accent-glow)}
+.tabs.bottom-tabs .tab.active{background:var(--accent-soft);color:var(--text);box-shadow:inset 0 2px 0 var(--accent),0 0 14px var(--accent-glow)}
+.card{border-color:color-mix(in srgb,var(--accent) 18%,var(--line))}
+.home-overview{border-color:var(--accent-border);box-shadow:0 8px 28px color-mix(in srgb,var(--accent) 7%,transparent)}
+.kicker{color:color-mix(in srgb,var(--accent) 58%,var(--muted))}
+.time,.plan-task-main small,.shift-summary{color:var(--accent)}
+.overview-track span,.tab-progress span{background:linear-gradient(90deg,var(--accent-strong),var(--accent));box-shadow:0 0 12px var(--accent-glow)}
+.item:has(input:checked){background:var(--accent-wash);border-left:2px solid var(--accent);padding-left:9px}
+.item input,.routine-table input,.setting-toggle input,.week-day-head input,.core-day-option input,.shift-toggle input{accent-color:var(--accent)}
+.routine-table tr.work-row td{background:var(--accent-wash)}
+.routine-table th{background:var(--accent-soft);color:var(--text)}
+.routine-table td:has(input:checked){background:var(--accent-wash)}
+.week-day{border-color:color-mix(in srgb,var(--accent) 22%,var(--line))}
+.week-day.drag-over{border-color:var(--accent);background:var(--accent-wash);box-shadow:inset 0 0 0 1px var(--accent-glow)}
+.week-day-head{border-bottom-color:var(--accent-border)}
+.plan-task:focus-within,.shift-editor:focus-within{border-color:var(--accent)}
+.streak-stat{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
+.streak-day.clean{background:color-mix(in srgb,var(--accent) 23%,var(--panel));border-color:var(--accent)}
+.streak-day.clean .state{color:var(--accent)}
+.streak-controls .zoom-btn.active{background:var(--accent-soft);border-color:var(--accent)}
+.accent-swatch[aria-pressed="true"]{box-shadow:0 0 0 1px var(--accent-glow)}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body[data-mode="light"] button.primary:not(:disabled):hover{color:#fff}
+body[data-mode="light"] .tabs.bottom-tabs .tab.active{color:var(--text)}
+body[data-mode="light"] .routine-table tr.work-row td,body[data-mode="light"] .routine-table td:has(input:checked){background:color-mix(in srgb,var(--accent) 10%,white)}
+body[data-mode="light"] .item:has(input:checked){background:color-mix(in srgb,var(--accent) 8%,white)}
+body[data-mode="light"] .streak-day.clean{background:color-mix(in srgb,var(--accent) 16%,white);border-color:var(--accent)}
+body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--accent) 10%,white)}
+
 </style>
 </head>
 <body>
