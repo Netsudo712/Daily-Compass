@@ -290,15 +290,23 @@ function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function minToTime(n){n=Math.max(0,Math.min(1439,n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function duration(t){return Math.max(10,Number(t.duration)||30)}
 function autoFitDay(i){
- const d=weekPlan[i],tasks=dayTasks(i);
- const fixedStart=timeToMin(shift(workStart,-15)),fixedEnd=timeToMin(shift(workEnd,15));
- let cursor=7*60;
- tasks.forEach(t=>{
-   if(t.work){const fixed={d4:[shift(workStart,-15),workStart],d5:[workStart,'12:00'],d6:['12:00','12:30'],d7:['12:30',workEnd],d8:[workEnd,shift(workEnd,15)]}[t.id];if(fixed){t.start=fixed[0];t.end=fixed[1]}return;}
-   let dur=duration(t),start=cursor;
-   if(d.workday&&start<fixedEnd&&start+dur>fixedStart)start=fixedEnd;
-   if(start+dur>23*60){start=Math.max(7*60,fixedStart-dur);if(d.workday&&start+dur>fixedStart)start=fixedEnd;}
-   t.start=minToTime(start);t.end=minToTime(start+dur);cursor=start+dur;
+ const d=weekPlan[i],tasks=dayTasks(i),occupied=[];
+ tasks.filter(t=>t.work).forEach(t=>{
+   const fixed={d4:[shift(workStart,-15),workStart],d5:[workStart,'12:00'],d6:['12:00','12:30'],d7:['12:30',workEnd],d8:[workEnd,shift(workEnd,15)]}[t.id];
+   if(fixed){t.start=fixed[0];t.end=fixed[1];occupied.push({start:timeToMin(t.start),end:timeToMin(t.end),id:t.id})}
+ });
+ tasks.filter(t=>!t.work).sort((a,b)=>timeToMin(a.start)-timeToMin(b.start)).forEach(t=>{
+   const dur=duration(t),preferred=timeToMin(t.start);let start=Math.max(7*60,preferred),placed=false;
+   for(let pass=0;pass<2&&!placed;pass++){
+     while(start+dur<=24*60){
+       const hit=occupied.find(o=>start<o.end&&start+dur>o.start);
+       if(!hit){placed=true;break;}
+       start=hit.end;
+     }
+     if(!placed){start=7*60;while(start<preferred&&start+dur<=24*60){const hit=occupied.find(o=>start<o.end&&start+dur>o.start);if(!hit){placed=true;break;}start=hit.end;}}
+   }
+   if(!placed)start=Math.max(7*60,24*60-dur);
+   t.start=minToTime(start);t.end=minToTime(start+dur);occupied.push({start,end:start+dur,id:t.id});
  });
 }
 function autoFitAll(){for(let i=0;i<7;i++)autoFitDay(i);savePlan();render();renderWeek()}
@@ -336,7 +344,7 @@ function renderWeek(){
  document.querySelectorAll('[data-drop-day]').forEach(el=>{
   el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
   el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
-  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');try{let x=JSON.parse(e.dataTransfer.getData('text/plain'));if(x.from!==Number(el.dataset.dropDay))moveTask(x.from,x.id,Number(el.dataset.dropDay),weekPlan[Number(el.dataset.dropDay)].tasks.length)}catch(_){}});
+  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');try{let x=JSON.parse(e.dataTransfer.getData('text/plain'));moveTask(x.from,x.id,Number(el.dataset.dropDay),weekPlan[Number(el.dataset.dropDay)].tasks.length)}catch(_){}});
  });
 }
 $('dailyDay').onchange=e=>{selectedDay=Number(e.target.value);render()};
