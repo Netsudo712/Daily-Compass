@@ -324,7 +324,7 @@ function render(){
 }
 function moveTask(from,id,to,index){
  if(from===to){let a=weekPlan[from].tasks,at=a.findIndex(t=>t.id===id);if(at<0)return;let [t]=a.splice(at,1);a.splice(Math.max(0,Math.min(index,a.length)),0,t);}
- else{let a=weekPlan[from].tasks,at=a.findIndex(t=>t.id===id);if(at<0)return;let [t]=a.splice(at,1);weekPlan[to].tasks.splice(Math.max(0,Math.min(index,weekPlan[to].tasks.length)),0,t);}
+ else{let a=weekPlan[from].tasks,at=a.findIndex(t=>t.id===id);if(at<0)return;let [t]=a.splice(at,1);if(t.work)weekPlan[to].workday=true;weekPlan[to].tasks.splice(Math.max(0,Math.min(index,weekPlan[to].tasks.length)),0,t);}
  autoFitDay(from);if(to!==from)autoFitDay(to);savePlan();render();renderWeek();
 }
 function renderWeek(){
