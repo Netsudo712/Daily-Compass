@@ -174,6 +174,23 @@ body{background:radial-gradient(ellipse at 50% -20%,color-mix(in srgb,var(--acce
 .overview-track{height:7px;background:var(--panel2);border-radius:20px;overflow:hidden;margin:10px 0 7px}
 .overview-track span{display:block;width:0;height:100%;background:var(--accent);border-radius:20px;transition:width .25s}
 .appearance-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.accent-picker{margin-top:18px}
+.accent-picker-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:13px}
+.accent-swatches{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.accent-swatch{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-width:0;padding:8px 3px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font-size:11px}
+.accent-swatch:hover{background:var(--panel2)}
+.accent-swatch[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
+.swatch-dot{width:30px;height:30px;border-radius:50%;display:block;background:var(--swatch);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--line);transition:transform .15s,box-shadow .15s}
+.accent-swatch[aria-pressed="true"] .swatch-dot{transform:scale(1.08);box-shadow:0 0 0 2px var(--accent),0 0 0 5px var(--panel)}
+.accent-swatch[data-accent-choice="blue"]{--swatch:#8bbcff}
+.accent-swatch[data-accent-choice="violet"]{--swatch:#b9a0ff}
+.accent-swatch[data-accent-choice="green"]{--swatch:#79d5a5}
+.accent-swatch[data-accent-choice="rose"]{--swatch:#f29ab5}
+.accent-swatch[data-accent-choice="amber"]{--swatch:#f0bd70}
+.accent-swatch[data-accent-choice="teal"]{--swatch:#62d4cc}
+.accent-swatch[data-accent-choice="sunset"]{--swatch:#ff956f}
+.accent-swatch[data-accent-choice="slate"]{--swatch:#a5b4c8}
+
 .appearance-field{display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--muted)}
 .appearance-field select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:11px;font:inherit}
 .accent-preview{display:flex;gap:8px;margin-top:14px}
@@ -187,6 +204,9 @@ body[data-accent="violet"]{--accent:#b9a0ff;--accent-soft:#34294f;--accent-stron
 body[data-accent="green"]{--accent:#79d5a5;--accent-soft:#203d32;--accent-strong:#32684d}
 body[data-accent="rose"]{--accent:#f29ab5;--accent-soft:#492b3a;--accent-strong:#85465f}
 body[data-accent="amber"]{--accent:#f0bd70;--accent-soft:#493923;--accent-strong:#85602f}
+body[data-accent="teal"]{--accent:#62d4cc;--accent-soft:#1e4144;--accent-strong:#286c70}
+body[data-accent="sunset"]{--accent:#ff956f;--accent-soft:#4a302c;--accent-strong:#98513e}
+body[data-accent="slate"]{--accent:#a5b4c8;--accent-soft:#303b4c;--accent-strong:#56677f}
 body[data-mode="light"]{--bg:#f3f6fb;--panel:#ffffff;--panel2:#e8eef6;--text:#1c2939;--muted:#66758a;--line:#d6dfeb;--accent-soft:color-mix(in srgb,var(--accent) 16%,white);--accent-strong:color-mix(in srgb,var(--accent) 76%,#24354b);--green:#25865a;background:linear-gradient(160deg,#f8faff,#edf2f8 60%,#f3f6fb)}
 body[data-mode="light"] .card,body[data-mode="light"] .week-day{background:var(--panel);border-color:var(--line)}
 body[data-mode="light"] .notice{background:color-mix(in srgb,var(--accent) 9%,white);border-color:color-mix(in srgb,var(--accent) 35%,white);color:#34465b}
@@ -207,7 +227,7 @@ body[data-mode="light"] .tabs.bottom-tabs .tab.active{background:var(--accent-so
 body[data-mode="light"] .tab-progress{background:#dbe3ed}
 body[data-mode="light"] .item:nth-child(even){background:rgba(20,40,70,.025)}
 body[data-mode="light"] .item.done .task{color:#8a96a6}
-@media(max-width:600px){.app-header{padding:17px 14px 7px}.app-header h1{font-size:21px}.home-overview{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 13px;margin:8px 0 14px}.overview-time{font-size:31px}.overview-progress{min-width:118px}.appearance-controls{grid-template-columns:1fr}}
+@media(max-width:600px){.app-header{padding:17px 14px 7px}.app-header h1{font-size:21px}.home-overview{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 13px;margin:8px 0 14px}.overview-time{font-size:31px}.overview-progress{min-width:118px}.appearance-controls{grid-template-columns:1fr}.accent-swatches{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.swatch-dot{width:32px;height:32px}}
 
 </style>
 </head>
@@ -291,10 +311,21 @@ body[data-mode="light"] .item.done .task{color:#8a96a6}
   <div class="kicker">Appearance</div><h3>Make it yours</h3>
   <p class="muted small">Choose a light or dark interface and an accent color. Your choices are saved on this device.</p>
   <div class="appearance-controls">
-   <label class="appearance-field"><span>Color mode</span><select id="themeMode"><option value="dark">Dark</option><option value="light">Light</option></select></label>
-   <label class="appearance-field"><span>Accent color</span><select id="accentColor"><option value="blue">Ocean blue</option><option value="violet">Violet</option><option value="green">Forest green</option><option value="rose">Rose</option><option value="amber">Amber</option></select></label>
+   <label class="appearance-field"><span>Interface mode</span><select id="themeMode"><option value="dark">Dark</option><option value="light">Light</option></select></label>
   </div>
-  <div class="accent-preview" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="accent-picker">
+   <div class="accent-picker-heading"><strong>Choose your color theme</strong><span class="muted small">Tap a color to preview it</span></div>
+   <div class="accent-swatches" role="group" aria-label="Color themes">
+    <button type="button" class="accent-swatch" data-accent-choice="blue" aria-label="Ocean blue" aria-pressed="false"><span class="swatch-dot"></span><span>Ocean</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="violet" aria-label="Violet" aria-pressed="false"><span class="swatch-dot"></span><span>Violet</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="green" aria-label="Forest green" aria-pressed="false"><span class="swatch-dot"></span><span>Forest</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="rose" aria-label="Rose" aria-pressed="false"><span class="swatch-dot"></span><span>Rose</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="amber" aria-label="Amber" aria-pressed="false"><span class="swatch-dot"></span><span>Amber</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="teal" aria-label="Teal" aria-pressed="false"><span class="swatch-dot"></span><span>Teal</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="sunset" aria-label="Sunset" aria-pressed="false"><span class="swatch-dot"></span><span>Sunset</span></button>
+    <button type="button" class="accent-swatch" data-accent-choice="slate" aria-label="Slate" aria-pressed="false"><span class="swatch-dot"></span><span>Slate</span></button>
+   </div>
+  </div>
  </div>
  <div class="card"><div class="kicker">Work schedule</div><h3>Edit each day's shift</h3><div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div><div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div><p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
@@ -352,7 +383,11 @@ function applyAppearance(){
  document.body.dataset.accent=accentColor;
  const meta=document.querySelector('meta[name="theme-color"]');
  if(meta)meta.content=themeMode==='light'?'#f3f6fb':'#101827';
- $('themeMode').value=themeMode;$('accentColor').value=accentColor;
+ $('themeMode').value=themeMode;
+ document.querySelectorAll('[data-accent-choice]').forEach(button=>{
+  const selected=button.dataset.accentChoice===accentColor;
+  button.setAttribute('aria-pressed',String(selected));
+ });
 }
 let militaryTime=localStorage.getItem('dc_military_time')==='true';
 let streaks=JSON.parse(localStorage.getItem('dc_streaks')||'[]');
@@ -601,7 +636,11 @@ $('checkUpdates').onclick=async()=>{
  location.reload();
 };
 $('themeMode').onchange=()=>{themeMode=$('themeMode').value;localStorage.setItem('dc_theme_mode',themeMode);applyAppearance();};
-$('accentColor').onchange=()=>{accentColor=$('accentColor').value;localStorage.setItem('dc_accent_color',accentColor);applyAppearance();};
+document.querySelectorAll('[data-accent-choice]').forEach(button=>button.onclick=()=>{
+ accentColor=button.dataset.accentChoice;
+ localStorage.setItem('dc_accent_color',accentColor);
+ applyAppearance();
+});
 applyAppearance();
 $('militaryTime').checked=militaryTime;
 $('militaryTime').onchange=()=>{militaryTime=$('militaryTime').checked;localStorage.setItem('dc_military_time',String(militaryTime));clock();render();renderWeek();loadShiftEditor()};
