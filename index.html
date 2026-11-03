@@ -375,7 +375,15 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <div class="kicker">Your sleep target</div><p>11:00 PM–7:00 AM · 8 hours</p>
+ <div class="kicker">Sleep target</div><h3>Set your sleep schedule</h3>
+ <p class="muted small">Choose when you want to go to bed and wake up. Daily Compass will use this target when arranging your routine.</p>
+ <div class="row" style="margin-top:10px;gap:14px">
+  <label>Bedtime <input type="time" id="sleepStart" value="23:00"></label>
+  <label>Wake-up <input type="time" id="sleepEnd" value="07:00"></label>
+  <button class="primary" id="saveSleep">Save sleep target</button>
+ </div>
+ <p class="muted small" id="sleepSaved" aria-live="polite">Current target: 11:00 PM–7:00 AM · 8 hours.</p>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <button class="danger" id="clear">Clear saved checkmarks and custom tasks</button></div>
 </section>
 </main>
@@ -413,6 +421,8 @@ const weekly=[
 let custom=JSON.parse(localStorage.getItem('dc_custom')||'[]');
 let checks=JSON.parse(localStorage.getItem('dc_checks')||'{}');
 let workStart=localStorage.getItem('dc_start')||'08:30', workEnd=localStorage.getItem('dc_end')||'17:00';
+let sleepStartTarget=localStorage.getItem('dc_sleep_start')||'23:00';
+let sleepEndTarget=localStorage.getItem('dc_sleep_end')||'07:00';
 let notified=new Set();
 let themeMode=localStorage.getItem('dc_theme_mode')||'dark';
 let accentColor=localStorage.getItem('dc_accent_color')||'blue';
@@ -557,16 +567,24 @@ function dayTasks(i){return weekPlan[i].tasks.filter(t=>(!t.work||weekPlan[i].wo
 function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function minToTime(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function duration(t){return Math.max(10,Number(t.duration)||30)}
+function sleepDurationMinutes(){
+ const start=timeToMin(sleepStartTarget),end=timeToMin(sleepEndTarget);
+ return (end-start+1440)%1440;
+}
+function sleepTargetLabel(){
+ const minutes=sleepDurationMinutes(),hours=Math.floor(minutes/60),mins=minutes%60;
+ return formatTime(sleepStartTarget)+'–'+formatTime(sleepEndTarget)+' · '+hours+(mins?'.'+String(mins).padStart(2,'0'):'')+' hours';
+}
 function autoFitDay(i){
  const d=weekPlan[i],tasks=dayTasks(i),occupied=[];
  const ws=timeToMin(d.workStart||workStart),we=timeToMin(d.workEnd||workEnd);
  const breakStart=Math.round((ws+we-30)/2),breakEnd=breakStart+30;
- const sleepStart=Math.max(23*60,we+15),sleepEnd=sleepStart+480;
+ const sleepStart=timeToMin(sleepStartTarget),sleepEnd=sleepStart+sleepDurationMinutes();
  const fixed={d4:[minToTime(ws-15),minToTime(ws)],d5:[minToTime(ws),minToTime(breakStart)],d6:[minToTime(breakStart),minToTime(breakEnd)],d7:[minToTime(breakEnd),minToTime(we)],d8:[minToTime(we),minToTime(we+15)]};
  tasks.filter(t=>t.work).forEach(t=>{
    const span=fixed[t.id];if(span){t.start=span[0];t.end=span[1];occupied.push({start:timeToMin(t.start),end:timeToMin(t.end),id:t.id})}
  });
- const sleep=tasks.find(t=>t.id==='d18');if(sleep){sleep.start=minToTime(sleepStart);sleep.end=minToTime(sleepEnd);sleep.overnight=true;occupied.push({start:sleepStart,end:sleepEnd,id:sleep.id});}
+ const sleep=tasks.find(t=>t.id==='d18');if(sleep){sleep.start=sleepStartTarget;sleep.end=sleepEndTarget;sleep.duration=sleepDurationMinutes();sleep.detail='Target: '+sleepTargetLabel()+'.';sleep.overnight=sleepEnd<=sleepStart||sleepEnd>1440;occupied.push({start:sleepStart,end:sleepEnd,id:sleep.id});}
  tasks.filter(t=>!t.work&&t.id!=='d18').sort((a,b)=>timeToMin(a.start)-timeToMin(b.start)).forEach(t=>{
    const dur=duration(t),preferred=timeToMin(t.start);let start=Math.max(6*60,preferred),placed=false;
    for(let pass=0;pass<2&&!placed;pass++){
@@ -742,6 +760,19 @@ $('autoWeek').onclick=autoFitAll;
 $('addTask').onclick=()=>{let name=$('newTask').value.trim();if(!name)return;let t=$('newTime').value||'20:00';weekPlan[selectedDay].tasks.push({id:'u'+Date.now(),start:t,end:shift(t,30),name,detail:'One-off task',duration:30,work:false});autoFitDay(selectedDay);savePlan();$('newTask').value='';render();renderWeek()};
 $('reset').onclick=()=>{if(confirm('Reset this day’s checkmarks?')){let prefix=dayDateKey(selectedDay)+'_';Object.keys(checks).filter(k=>k.startsWith(prefix)).forEach(k=>delete checks[k]);localStorage.setItem('dc_checks',JSON.stringify(checks));render()}};
 $('clear').onclick=()=>{if(confirm('Clear all saved checkmarks and custom tasks? Your weekly layout and streaks will stay saved.')){checks={};custom=[];localStorage.removeItem('dc_checks');localStorage.removeItem('dc_custom');localStorage.setItem('dc_checks','{}');render()}};
+$('sleepStart').value=sleepStartTarget;
+$('sleepEnd').value=sleepEndTarget;
+$('sleepSaved').textContent='Current target: '+sleepTargetLabel()+'.';
+$('saveSleep').onclick=()=>{
+ const start=$('sleepStart').value,end=$('sleepEnd').value;
+ const minutes=(timeToMin(end)-timeToMin(start)+1440)%1440;
+ if(!start||!end||minutes===0){alert('Choose a bedtime and a different wake-up time.');return;}
+ sleepStartTarget=start;sleepEndTarget=end;
+ localStorage.setItem('dc_sleep_start',start);localStorage.setItem('dc_sleep_end',end);
+ weekPlan.forEach((day,i)=>{const task=day.tasks.find(t=>t.id==='d18');if(task){task.start=start;task.end=end;task.duration=minutes;task.detail='Target: '+sleepTargetLabel()+'.';task.overnight=timeToMin(end)<=timeToMin(start); }autoFitDay(i);});
+ savePlan();render();renderWeek();
+ $('sleepSaved').textContent='Saved sleep target: '+sleepTargetLabel()+'.';
+};
 $('dailyDay').value=String(selectedDay);
 syncCoreTasks();autoFitAll();renderCore();loadShiftEditor();
 
