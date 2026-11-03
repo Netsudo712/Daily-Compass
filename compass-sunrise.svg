@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title">
+<title id="title">Daily Compass sunrise compass</title>
+<g fill="none" stroke="#f2eee5" stroke-width="4.2" stroke-linecap="round">
+<path d="M19 46a32 32 0 0 1 62 0"/>
+<path d="M20 56a32 32 0 0 0 6 13"/>
+<path d="M80 56a32 32 0 0 1-6 13"/>
+</g>
+<g fill="#f2eee5">
+<path d="M50 5 45.5 18h9z"/>
+<path d="m5 50 13-4.5v9z"/>
+<path d="m95 50-13-4.5v9z"/>
+</g>
+<g fill="#f5ad42">
+<path d="M50 20 47.5 36h5z"/>
+<path d="m28 31 12 13-4-1z"/>
+<path d="m72 31-12 13 4-1z"/>
+<path d="M30 56a20 20 0 0 1 40 0z"/>
+</g>
+<g fill="#83bde8">
+<rect x="25" y="64" width="50" height="4.8" rx="2.4"/>
+<rect x="32" y="73" width="36" height="4.8" rx="2.4"/>
+<rect x="40" y="82" width="20" height="4.8" rx="2.4"/>
+</g>
+</svg>
