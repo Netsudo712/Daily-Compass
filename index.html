@@ -157,16 +157,70 @@ main{padding-bottom:100px}
  .tab-icon{font-size:18px}
  main{padding-bottom:94px}
 }
+
+/* Refined home header and appearance themes */
+:root{--bg:#0b1220;--panel:#101b2b;--panel2:#17263a;--text:#edf3fb;--muted:#9aabc1;--line:#304158;--accent:#8bbcff;--accent-soft:#203750;--accent-strong:#2d5d94;--green:#73d6a0}
+body{background:radial-gradient(ellipse at 50% -20%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 48%),var(--bg);color:var(--text);transition:background .2s,color .2s}
+.app-header{max-width:1040px;padding:22px 16px 10px;margin:auto}
+.app-brand{display:flex;align-items:center;gap:11px}
+.brand-mark{width:39px;height:39px;display:grid;place-items:center;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.04em}
+.app-header h1{font-size:23px;letter-spacing:-.035em;line-height:1.15}
+.app-header p{font-size:13px;color:var(--muted);margin:7px 0 0 50px}
+.home-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.8fr);gap:22px;align-items:center;margin:8px 0 18px;padding:17px 19px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.overview-time{font-size:clamp(30px,6vw,40px);font-weight:760;letter-spacing:-.045em;line-height:1.15;margin:3px 0}
+.progress-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.progress-heading strong{font-size:20px;font-variant-numeric:tabular-nums}
+.progress-divider{color:var(--muted);font-size:14px;padding:0 3px}
+.overview-track{height:7px;background:var(--panel2);border-radius:20px;overflow:hidden;margin:10px 0 7px}
+.overview-track span{display:block;width:0;height:100%;background:var(--accent);border-radius:20px;transition:width .25s}
+.appearance-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.appearance-field{display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--muted)}
+.appearance-field select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:11px;font:inherit}
+.accent-preview{display:flex;gap:8px;margin-top:14px}
+.accent-preview span{height:6px;flex:1;border-radius:20px;background:var(--accent)}
+.accent-preview span:nth-child(2){opacity:.8}.accent-preview span:nth-child(3){opacity:.6}.accent-preview span:nth-child(4){opacity:.4}.accent-preview span:nth-child(5){opacity:.2}
+button.primary,.tab.active{background:var(--accent-soft);border-color:var(--accent);color:var(--text)}
+.time,.plan-task-main small{color:var(--accent)}
+.item input,.routine-table input,.setting-toggle input,.week-day-head input{accent-color:var(--accent)}
+.tab-progress span{background:var(--accent)}
+body[data-accent="violet"]{--accent:#b9a0ff;--accent-soft:#34294f;--accent-strong:#59438c}
+body[data-accent="green"]{--accent:#79d5a5;--accent-soft:#203d32;--accent-strong:#32684d}
+body[data-accent="rose"]{--accent:#f29ab5;--accent-soft:#492b3a;--accent-strong:#85465f}
+body[data-accent="amber"]{--accent:#f0bd70;--accent-soft:#493923;--accent-strong:#85602f}
+body[data-mode="light"]{--bg:#f3f6fb;--panel:#ffffff;--panel2:#e8eef6;--text:#1c2939;--muted:#66758a;--line:#d6dfeb;--accent-soft:color-mix(in srgb,var(--accent) 16%,white);--accent-strong:color-mix(in srgb,var(--accent) 76%,#24354b);--green:#25865a;background:linear-gradient(160deg,#f8faff,#edf2f8 60%,#f3f6fb)}
+body[data-mode="light"] .card,body[data-mode="light"] .week-day{background:var(--panel);border-color:var(--line)}
+body[data-mode="light"] .notice{background:color-mix(in srgb,var(--accent) 9%,white);border-color:color-mix(in srgb,var(--accent) 35%,white);color:#34465b}
+body[data-mode="light"] .row input,body[data-mode="light"] .row select,body[data-mode="light"] .streak-controls select,body[data-mode="light"] .streak-controls input,body[data-mode="light"] .shift-editor input,body[data-mode="light"] .plan-task select{background:#f7f9fc;color:var(--text);border-color:var(--line)}
+body[data-mode="light"] .routine-table th{background:#e8eef6;color:#314258}
+body[data-mode="light"] .routine-table td{background:#fff}
+body[data-mode="light"] .routine-table tr:nth-child(even) td{background:#f6f8fb}
+body[data-mode="light"] .routine-table tr.work-row td{background:#edf3fa}
+body[data-mode="light"] .week-day.drag-over{background:#edf4fc}
+body[data-mode="light"] .streak-stat,body[data-mode="light"] .streak-day{background:#f7f9fc;color:var(--text);border-color:var(--line)}
+body[data-mode="light"] .streak-day.clean{background:#e4f4eb;border-color:#83c5a0}
+body[data-mode="light"] .streak-day.slip{background:#fae9ee;border-color:#e1a1b3}
+body[data-mode="light"] .streak-day.future{opacity:.4}
+body[data-mode="light"] .shift-editor{background:#f2f5fa;border-color:var(--line)}
+body[data-mode="light"] .tabs.bottom-tabs{background:rgba(255,255,255,.96);border-color:var(--line);box-shadow:0 -8px 28px rgba(25,40,60,.12)}
+body[data-mode="light"] .tabs.bottom-tabs .tab{color:#66758a}
+body[data-mode="light"] .tabs.bottom-tabs .tab.active{background:var(--accent-soft);color:#23344a}
+body[data-mode="light"] .tab-progress{background:#dbe3ed}
+body[data-mode="light"] .item:nth-child(even){background:rgba(20,40,70,.025)}
+body[data-mode="light"] .item.done .task{color:#8a96a6}
+@media(max-width:600px){.app-header{padding:17px 14px 7px}.app-header h1{font-size:21px}.home-overview{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 13px;margin:8px 0 14px}.overview-time{font-size:31px}.overview-progress{min-width:118px}.appearance-controls{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
-<header><h1>Daily Compass</h1><p>A calmer, more consistent day — one block at a time.</p></header>
+<header class="app-header">
+ <div class="app-brand"><span class="brand-mark">DC</span><div><div class="kicker">YOUR PERSONAL PLANNER</div><h1>Daily Compass</h1></div></div>
+ <p>Make today count, one block at a time.</p>
+</header>
 <main>
-<div class="top">
- <div class="card day-at-glance"><div class="kicker" id="todayLabel">Today</div><div class="big" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
- <div class="day-summary"><span class="kicker">Daily progress</span><strong><span id="doneCount">0</span>/<span id="totalCount">0</span></strong><span class="muted small" id="percent">0% complete</span></div>
+<div class="home-overview">
+ <div class="overview-clock"><div class="kicker" id="todayLabel">Today</div><div class="overview-time" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
+ <div class="overview-progress"><div class="progress-heading"><span class="kicker">Daily progress</span><strong><span id="doneCount">0</span><span class="progress-divider">/</span><span id="totalCount">0</span></strong></div><div class="overview-track"><span id="overviewProgressFill"></span></div><div class="muted small" id="percent">0% complete</div></div>
 </div>
-<div class="notice">Set each day’s work shift in Settings, assign recurring priorities in Core Subjects, and use Week to move activities around. Your daily plan fits around the commitments you set.</div>
 <nav class="tabs bottom-tabs" id="bottomTabs" aria-label="Main navigation">
  <div class="tab-progress" aria-hidden="true"><span id="tabProgressFill"></span></div>
  <button class="tab" data-tab="week"><span class="tab-icon">▦</span><span>Week</span></button>
@@ -233,6 +287,15 @@ main{padding-bottom:100px}
 </section>
 
 <section class="section" id="settings">
+ <div class="card">
+  <div class="kicker">Appearance</div><h3>Make it yours</h3>
+  <p class="muted small">Choose a light or dark interface and an accent color. Your choices are saved on this device.</p>
+  <div class="appearance-controls">
+   <label class="appearance-field"><span>Color mode</span><select id="themeMode"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+   <label class="appearance-field"><span>Accent color</span><select id="accentColor"><option value="blue">Ocean blue</option><option value="violet">Violet</option><option value="green">Forest green</option><option value="rose">Rose</option><option value="amber">Amber</option></select></label>
+  </div>
+  <div class="accent-preview" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+ </div>
  <div class="card"><div class="kicker">Work schedule</div><h3>Edit each day's shift</h3><div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div><div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div><p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Time display</div><label class="setting-toggle"><span><strong>Military time</strong><small>Show times as 14:30 instead of 2:30 PM</small></span><input type="checkbox" id="militaryTime"></label>
@@ -282,6 +345,15 @@ let custom=JSON.parse(localStorage.getItem('dc_custom')||'[]');
 let checks=JSON.parse(localStorage.getItem('dc_checks')||'{}');
 let workStart=localStorage.getItem('dc_start')||'08:30', workEnd=localStorage.getItem('dc_end')||'17:00';
 let notified=new Set();
+let themeMode=localStorage.getItem('dc_theme_mode')||'dark';
+let accentColor=localStorage.getItem('dc_accent_color')||'blue';
+function applyAppearance(){
+ document.body.dataset.mode=themeMode;
+ document.body.dataset.accent=accentColor;
+ const meta=document.querySelector('meta[name="theme-color"]');
+ if(meta)meta.content=themeMode==='light'?'#f3f6fb':'#101827';
+ $('themeMode').value=themeMode;$('accentColor').value=accentColor;
+}
 let militaryTime=localStorage.getItem('dc_military_time')==='true';
 let streaks=JSON.parse(localStorage.getItem('dc_streaks')||'[]');
 let activeStreakId=localStorage.getItem('dc_active_streak')||'';
@@ -446,7 +518,7 @@ function render(){
  $('dailyHeading').textContent=DAY_NAMES[selectedDay]+' · '+(d.workday?('Work '+formatRange(d.workStart,d.workEnd)):'Day off');
  let done=0;
  $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+formatRange(t.start,t.end)+(t.overnight?' (+1 day)':'')+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
- $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;const pct=Math.round(tasks.length?done/tasks.length*100:0);$('percent').textContent=pct+'% complete';$('tabProgressFill').style.width=pct+'%';$('bottomTabs').style.setProperty('--completion',pct+'%');
+ $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;const pct=Math.round(tasks.length?done/tasks.length*100:0);$('percent').textContent=pct+'% complete';$('overviewProgressFill').style.width=pct+'%';$('tabProgressFill').style.width=pct+'%';$('bottomTabs').style.setProperty('--completion',pct+'%');
  document.querySelectorAll('[data-plan-id]').forEach(el=>el.addEventListener('change',e=>{let t=tasks.find(x=>x.id===e.target.dataset.planId);if(!t)return;checks[taskDoneKey(selectedDay,t)]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
 }
 function moveTask(from,id,to,index){
@@ -509,6 +581,9 @@ $('checkUpdates').onclick=async()=>{
  }catch(error){status.textContent='Could not check right now. Connect to the internet and try again.';}
  finally{updateCheckInProgress=false;button.disabled=false;}
 };
+$('themeMode').onchange=()=>{themeMode=$('themeMode').value;localStorage.setItem('dc_theme_mode',themeMode);applyAppearance();};
+$('accentColor').onchange=()=>{accentColor=$('accentColor').value;localStorage.setItem('dc_accent_color',accentColor);applyAppearance();};
+applyAppearance();
 $('militaryTime').checked=militaryTime;
 $('militaryTime').onchange=()=>{militaryTime=$('militaryTime').checked;localStorage.setItem('dc_military_time',String(militaryTime));clock();render();renderWeek();loadShiftEditor()};
 $('shiftDay').onchange=loadShiftEditor;
