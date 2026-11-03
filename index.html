@@ -131,18 +131,49 @@ button{border-radius:7px}
  .tabs{overflow-x:auto;flex-wrap:nowrap}
  .tab{white-space:nowrap;font-size:13px;padding:8px 10px}
 }
+
+/* Fixed bottom navigation with progress integrated into its top edge */
+.top{grid-template-columns:1fr auto;align-items:center}
+.day-at-glance{min-width:0}
+.day-summary{display:flex;flex-direction:column;align-items:flex-end;gap:3px;padding:8px 12px}
+.day-summary strong{font-size:22px;font-variant-numeric:tabular-nums}
+.tabs.bottom-tabs{position:fixed;z-index:1000;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,1040px);height:72px;margin:0;padding:8px 8px 7px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;align-items:stretch;background:rgba(12,22,36,.97);border:1px solid #35465d;border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -8px 28px rgba(0,0,0,.3);backdrop-filter:blur(16px)}
+.tabs.bottom-tabs .tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:4px 2px;border:0;border-radius:8px;background:transparent;color:#91a3ba;font-size:11px;line-height:1.2;white-space:nowrap}
+.tabs.bottom-tabs .tab.active{background:#203750;color:#eaf3ff}
+.tab-icon{font-size:19px;line-height:1.15}
+.tab-progress{position:absolute;top:-1px;left:0;right:0;height:3px;background:#33445a;border-radius:20px 20px 0 0;overflow:hidden}
+.tab-progress span{display:block;height:100%;width:0;background:#83b7ff;transition:width .25s}
+main{padding-bottom:100px}
+.setting-toggle{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 0}
+.setting-toggle span{display:flex;flex-direction:column;gap:3px}
+.setting-toggle small{font-size:12px;color:var(--muted)}
+.setting-toggle input{width:20px;height:20px;accent-color:var(--green)}
+@media(max-width:600px){
+ .top{grid-template-columns:minmax(0,1fr) auto;gap:6px}
+ .day-summary{padding:7px 4px}
+ .day-summary strong{font-size:19px}
+ .tabs.bottom-tabs{height:68px;border-radius:13px 13px 0 0;padding:7px 5px 6px}
+ .tabs.bottom-tabs .tab{font-size:10px}
+ .tab-icon{font-size:18px}
+ main{padding-bottom:94px}
+}
 </style>
 </head>
 <body>
 <header><h1>Daily Compass</h1><p>A calmer, more consistent day — one block at a time.</p></header>
 <main>
 <div class="top">
- <div class="card"><div class="kicker" id="todayLabel">Today</div><div class="big" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
- <div class="card"><div class="kicker">Today's progress</div><div class="big"><span id="doneCount">0</span>/<span id="totalCount">0</span></div><div class="track"><div class="fill" id="progress"></div></div><div class="muted small" id="percent">0% complete</div></div>
+ <div class="card day-at-glance"><div class="kicker" id="todayLabel">Today</div><div class="big" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
+ <div class="day-summary"><span class="kicker">Daily progress</span><strong><span id="doneCount">0</span>/<span id="totalCount">0</span></strong><span class="muted small" id="percent">0% complete</span></div>
 </div>
 <div class="notice">Set each day’s work shift in Settings, assign recurring priorities in Core Subjects, and use Week to move activities around. Your daily plan fits around the commitments you set.</div>
-<nav class="tabs">
- <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="core">Core Subjects</button><button class="tab" data-tab="streaks">Streaks</button><button class="tab" data-tab="settings">Settings</button>
+<nav class="tabs bottom-tabs" id="bottomTabs" aria-label="Main navigation">
+ <div class="tab-progress" aria-hidden="true"><span id="tabProgressFill"></span></div>
+ <button class="tab" data-tab="week"><span class="tab-icon">▦</span><span>Week</span></button>
+ <button class="tab" data-tab="core"><span class="tab-icon">☑</span><span>Subjects</span></button>
+ <button class="tab active" data-tab="today"><span class="tab-icon">⌂</span><span>Today</span></button>
+ <button class="tab" data-tab="streaks"><span class="tab-icon">◷</span><span>Streaks</span></button>
+ <button class="tab" data-tab="settings"><span class="tab-icon">⚙</span><span>Settings</span></button>
 </nav>
 <section class="section active" id="today">
  <div class="card"><div class="row" style="justify-content:space-between"><div><div class="kicker">Your daily plan</div><strong id="dailyHeading">Today’s plan</strong></div><select id="dailyDay" aria-label="Choose day"></select><button id="reset">Reset day</button></div><div id="schedule"></div></div>
@@ -204,6 +235,8 @@ button{border-radius:7px}
 <section class="section" id="settings">
  <div class="card"><div class="kicker">Work schedule</div><h3>Edit each day's shift</h3><div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div><div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div><p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+ <div class="kicker">Time display</div><label class="setting-toggle"><span><strong>Military time</strong><small>Show times as 14:30 instead of 2:30 PM</small></span><input type="checkbox" id="militaryTime"></label>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Your sleep target</div><p>11:00 PM–7:00 AM · 8 hours</p>
@@ -245,6 +278,7 @@ let custom=JSON.parse(localStorage.getItem('dc_custom')||'[]');
 let checks=JSON.parse(localStorage.getItem('dc_checks')||'{}');
 let workStart=localStorage.getItem('dc_start')||'08:30', workEnd=localStorage.getItem('dc_end')||'17:00';
 let notified=new Set();
+let militaryTime=localStorage.getItem('dc_military_time')==='true';
 let streaks=JSON.parse(localStorage.getItem('dc_streaks')||'[]');
 let activeStreakId=localStorage.getItem('dc_active_streak')||'';
 let streakZoom=7, streakOffset=0;
@@ -339,8 +373,10 @@ document.querySelectorAll('.zoom-btn').forEach(b=>b.addEventListener('click',()=
 
 function shift(t,m){let [h,n]=t.split(':').map(Number);let d=new Date(2000,0,1,h,n+m);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')}));
+function formatTime(t){if(!t)return '';if(militaryTime)return t;let [h,m]=t.split(':').map(Number);const suffix=h>=12?'PM':'AM',hour=h%12||12;return hour+':'+String(m).padStart(2,'0')+' '+suffix}
+function formatRange(a,b){return formatTime(a)+'–'+formatTime(b)}
+function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:!militaryTime});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));$(b.dataset.tab).classList.add('active')}));
 $('addTask').onclick=()=>{let name=$('newTask').value.trim();if(!name)return;let t=$('newTime').value||'20:00';custom.push({start:t,end:shift(t,30),name,detail:'One-off task'});localStorage.setItem('dc_custom',JSON.stringify(custom));$('newTask').value='';render()};
 $('reset').onclick=()=>{if(confirm('Reset today’s checkmarks?')){Object.keys(checks).filter(k=>k.startsWith(todayKey()+'_')).forEach(k=>delete checks[k]);localStorage.setItem('dc_checks',JSON.stringify(checks));render()}};
 $('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').value;if(!workStart||!workEnd){alert('Enter both work times.');return}localStorage.setItem('dc_start',workStart);localStorage.setItem('dc_end',workEnd);render()};
@@ -403,10 +439,10 @@ function render(){
  const d=weekPlan[selectedDay],tasks=dayTasks(selectedDay);
  $('dailyDay').innerHTML=DAY_NAMES.map((n,i)=>'<option value="'+i+'">'+n+(i===((new Date().getDay()+6)%7)?' · Today':'')+'</option>').join('');
  $('dailyDay').value=String(selectedDay);
- $('dailyHeading').textContent=DAY_NAMES[selectedDay]+' · '+(d.workday?('Work '+d.workStart+'–'+d.workEnd):'Day off');
+ $('dailyHeading').textContent=DAY_NAMES[selectedDay]+' · '+(d.workday?('Work '+formatRange(d.workStart,d.workEnd)):'Day off');
  let done=0;
- $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+t.start+'–'+t.end+(t.overnight?' (+1 day)':'')+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
- $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;$('progress').style.width=(tasks.length?done/tasks.length*100:0)+'%';$('percent').textContent=Math.round(tasks.length?done/tasks.length*100:0)+'% complete';
+ $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+formatRange(t.start,t.end)+(t.overnight?' (+1 day)':'')+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
+ $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;const pct=Math.round(tasks.length?done/tasks.length*100:0);$('percent').textContent=pct+'% complete';$('tabProgressFill').style.width=pct+'%';$('bottomTabs').style.setProperty('--completion',pct+'%');
  document.querySelectorAll('[data-plan-id]').forEach(el=>el.addEventListener('change',e=>{let t=tasks.find(x=>x.id===e.target.dataset.planId);if(!t)return;checks[taskDoneKey(selectedDay,t)]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
 }
 function moveTask(from,id,to,index){
@@ -417,8 +453,8 @@ function moveTask(from,id,to,index){
 function renderWeek(){
  $('weekPlanner').innerHTML=weekPlan.map((d,i)=>{
   let tasks=dayTasks(i);
-  return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><span class="shift-summary">'+(d.workday?d.workStart+'–'+d.workEnd:'Day off')+'</span></div>'+
-  tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+t.start+'–'+t.end+(t.overnight?' (+1 day)':'')+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
+  return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><span class="shift-summary">'+(d.workday?formatRange(d.workStart,d.workEnd):'Day off')+'</span></div>'+
+  tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+formatRange(t.start,t.end)+(t.overnight?' (+1 day)':'')+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
   '<div class="day-actions"><button data-view-day="'+i+'">Open day</button><button data-add-day="'+i+'">＋ Add task</button></div></div>';
  }).join('');
  document.querySelectorAll('[data-workday]').forEach(el=>el.onchange=()=>{let i=Number(el.dataset.workday);weekPlan[i].workday=el.checked;autoFitDay(i);savePlan();render();renderWeek()});
@@ -446,8 +482,10 @@ function loadShiftEditor(){
  $('workStart').value=d.workStart||workStart;
  $('workEnd').value=d.workEnd||workEnd;
  $('workStart').disabled=!d.workday;$('workEnd').disabled=!d.workday;
- $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+d.workStart+'–'+d.workEnd:' is currently marked as a day off')+'.';
+ $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+formatRange(d.workStart,d.workEnd):' is currently marked as a day off')+'.';
 }
+$('militaryTime').checked=militaryTime;
+$('militaryTime').onchange=()=>{militaryTime=$('militaryTime').checked;localStorage.setItem('dc_military_time',String(militaryTime));clock();render();renderWeek();loadShiftEditor()};
 $('shiftDay').onchange=loadShiftEditor;
 $('shiftWorking').onchange=()=>{$('workStart').disabled=!$('shiftWorking').checked;$('workEnd').disabled=!$('shiftWorking').checked};
 $('saveWork').onclick=()=>{
@@ -456,7 +494,7 @@ $('saveWork').onclick=()=>{
  if(working&&(!start||!end||timeToMin(end)<=timeToMin(start))){alert('Please enter a valid shift with an end time later than its start.');return;}
  d.workday=working;if(working){d.workStart=start;d.workEnd=end;}
  autoFitDay(i);savePlan();render();renderWeek();loadShiftEditor();
- $('shiftSaved').textContent=DAY_NAMES[i]+' saved: '+(working?start+'–'+end:'Day off')+'.';
+ $('shiftSaved').textContent=DAY_NAMES[i]+' saved: '+(working?formatRange(start,end):'Day off')+'.';
 };
 const ROUTINE_GROUPS=[
  {name:'Work',hint:'Shift and commute · set in Settings',work:true},
