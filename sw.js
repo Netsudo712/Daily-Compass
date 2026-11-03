@@ -1,7 +1,7 @@
-const CACHE='daily-compass-v14';
+const CACHE='daily-compass-v15';
 self.addEventListener('install',event=>{
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['./','./index.html','./manifest.webmanifest'])));
+  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['./','./index.html','./manifest.webmanifest','./compass-sunrise.svg'])));
 });
 self.addEventListener('message',event=>{
   if(event.data&&event.data.type==='SKIP_WAITING')self.skipWaiting();
