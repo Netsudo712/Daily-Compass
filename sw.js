@@ -1,4 +1,4 @@
-const CACHE='daily-compass-v15';
+const CACHE='daily-compass-v16';
 self.addEventListener('install',event=>{
   self.skipWaiting();
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(['./','./index.html','./manifest.webmanifest','./compass-sunrise.svg'])));
