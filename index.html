@@ -585,6 +585,16 @@ function formatTime(t){if(!t)return '';if(militaryTime)return t;let [h,m]=t.spli
 function formatRange(a,b){return formatTime(a)+'–'+formatTime(b)}
 function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:!militaryTime});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.section').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));$(b.dataset.tab).classList.add('active')}));
+function restoreUpdateView(){
+ let saved=null;
+ try{saved=JSON.parse(sessionStorage.getItem('dc_update_view')||'null');sessionStorage.removeItem('dc_update_view')}catch(_){}
+ if(!saved)return;
+ if(saved.day!==undefined&&Number.isInteger(Number(saved.day))){selectedDay=Math.max(0,Math.min(6,Number(saved.day)));render()}
+ const tab=document.querySelector('.tab[data-tab="'+saved.tab+'"]');
+ if(tab)tab.click();
+ requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,Math.max(0,Number(saved.scrollY)||0))));
+}
+
 $('addTask').onclick=()=>{let name=$('newTask').value.trim();if(!name)return;let t=$('newTime').value||'20:00';custom.push({start:t,end:shift(t,30),name,detail:'One-off task'});localStorage.setItem('dc_custom',JSON.stringify(custom));$('newTask').value='';render()};
 $('reset').onclick=()=>{if(confirm('Reset today’s checkmarks?')){Object.keys(checks).filter(k=>k.startsWith(todayKey()+'_')).forEach(k=>delete checks[k]);localStorage.setItem('dc_checks',JSON.stringify(checks));render()}};
 $('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').value;if(!workStart||!workEnd){alert('Enter both work times.');return}localStorage.setItem('dc_start',workStart);localStorage.setItem('dc_end',workEnd);render()};
@@ -720,6 +730,7 @@ $('checkUpdates').onclick=async()=>{
  const button=$('checkUpdates'),status=$('updateStatus');
  if(updateCheckInProgress)return;
  updateCheckInProgress=true;manualRefreshRequested=true;button.disabled=true;
+ try{sessionStorage.setItem('dc_update_view',JSON.stringify({tab:document.querySelector('.tab.active')?.dataset.tab||'today',scrollY:window.scrollY,day:$('dailyDay')?.value}));}catch(_){}
  status.textContent='Checking for updates…';
  try{
   if('serviceWorker'in navigator){
@@ -824,6 +835,7 @@ $('saveSleep').onclick=()=>{
 };
 $('dailyDay').value=String(selectedDay);
 syncCoreTasks();autoFitAll();renderCore();loadShiftEditor();
+restoreUpdateView();
 
 
 autoFitAll();
