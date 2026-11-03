@@ -371,6 +371,14 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
 .today-exercise.done .today-exercise-name{text-decoration:line-through;color:var(--muted)}
 .workout-empty{padding:16px 0}
 @media(max-width:600px){.workout-subtabs .tab{font-size:11px;padding:9px 4px}.exercise-list-row{grid-template-columns:minmax(0,1fr) auto}.today-exercise{gap:7px}}
+.exercise-open{display:block;width:100%;min-width:0;text-align:left;background:transparent;border:0;border-radius:9px;padding:8px;color:var(--text)}
+.exercise-open:hover,.exercise-open:focus-visible{background:var(--panel2);outline:1px solid var(--accent)}
+.exercise-open strong{display:block}.exercise-open small{display:block;color:var(--muted);margin-top:3px}
+.exercise-list-row{padding:8px 2px}
+.exercise-list-row .exercise-open{padding:9px}
+.today-exercise{grid-template-columns:auto minmax(0,1fr);padding:8px 0}
+.today-exercise .exercise-open{padding:10px}
+.package-exercise-open{margin:-4px 0 6px}
 </style>
 </head>
 <body>
@@ -520,7 +528,7 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button> <span class="muted small" id="notifyStatus"></span>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v30</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v31</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
    <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Data</div><p class="muted small">Clear saved checkmarks and one-off custom tasks. Your weekly layout and streaks will stay saved.</p><button class="danger" id="clear">Clear saved checkmarks and custom tasks</button>
@@ -909,21 +917,35 @@ function routineIds(group){return group.work?['d4','d5','d6','d7','d8']:group.na
 
 function workoutExerciseRow(w,context){
  const pr=workoutStats[w.id]?.prWeight,prReps=workoutStats[w.id]?.prReps;
- return '<div class="exercise-list-row"><div><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · '+w.equipment+'</small><small>PR: '+(pr?pr+' lb'+(prReps?' × '+prReps+' reps':''):'Not set')+'</small></div><button data-guide-exercise="'+w.id+'">View guide</button></div>';
+ return '<div class="exercise-list-row"><button class="exercise-open" data-open-exercise="'+w.id+'"><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · '+w.equipment+'</small><small>PR: '+(pr?pr+' lb'+(prReps?' × '+prReps+' reps':''):'Not set')+' · Tap to view guide & edit PR</small></button></div>';
 }
 function filteredExercises(searchId,categoryId){
  const q=($(searchId)?.value||'').toLowerCase().trim(),cat=$(categoryId)?.value||'All';
  return WORKOUT_LIBRARY.filter(w=>(cat==='All'||w.categories.includes(cat))&&(!q||(w.name+' '+w.categories.join(' ')+' '+w.primary+' '+w.equipment).toLowerCase().includes(q)));
 }
-function bindGuideButtons(){document.querySelectorAll('[data-guide-exercise]').forEach(b=>b.onclick=()=>openWorkout(b.dataset.guideExercise))}
+function bindExerciseOpenButtons(){document.querySelectorAll('[data-open-exercise]').forEach(b=>b.onclick=()=>openWorkout(b.dataset.openExercise))}
 function renderWorkoutLibrary(){
  $('workoutList').innerHTML=filteredExercises('exerciseSearch','exerciseCategory').map(w=>workoutExerciseRow(w,'library')).join('')||'<p class="muted small">No exercises match that filter.</p>';
- bindGuideButtons();
+ bindExerciseOpenButtons();
 }
 function renderPackageExerciseList(){
  const chosen=workoutPackages[selectedPackageDay].items.map(x=>x.exerciseId);
- $('packageExerciseList').innerHTML=filteredExercises('packageSearch','packageCategory').map(w=>'<div class="exercise-list-row"><div><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · '+w.equipment+'</small><small>PR: '+(workoutStats[w.id]?.prWeight?workoutStats[w.id].prWeight+' lb':'Not set')+'</small></div><button class="'+(chosen.includes(w.id)?'':'primary')+'" data-add-exercise="'+w.id+'" '+(chosen.includes(w.id)?'disabled':'')+'>'+(chosen.includes(w.id)?'Added':'＋ Add')+'</button></div>').join('')||'<p class="muted small">No exercises match that filter.</p>';
+ $('packageExerciseList').innerHTML=filteredExercises('packageSearch','packageCategory').map(w=>'<div class="exercise-list-row"><button class="exercise-open" data-open-exercise="'+w.id+'"><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · '+w.equipment+'</small><small>PR: '+(workoutStats[w.id]?.prWeight?workoutStats[w.id].prWeight+' lb':'Not set')+' · Tap to view guide & edit PR</small></button><button class="'+(chosen.includes(w.id)?'':'primary')+'" data-add-exercise="'+w.id+'" '+(chosen.includes(w.id)?'disabled':'')+'>'+(chosen.includes(w.id)?'Added':'＋ Add')+'</button></div>').join('')||'<p class="muted small">No exercises match that filter.</p>';
+ bindExerciseOpenButtons();
  document.querySelectorAll('[data-add-exercise]').forEach(b=>b.onclick=()=>addExerciseToPackage(b.dataset.addExercise));
+}
+function addExerciseToPackage(exerciseId){
+ const w=exerciseById(exerciseId);if(!w)return;
+ const day=selectedPackageDay,items=workoutPackages[day].items;
+ if(items.some(x=>x.exerciseId===exerciseId))return;
+ const stats=workoutStats[exerciseId]||{};
+ items.push({id:'pkg-'+exerciseId+'-'+day+'-'+Date.now(),exerciseId,mode:'working',weight:stats.targetWeight||'',reps:stats.targetReps||10,sets:3});
+ selectedWorkoutDay=day;
+ saveWorkoutData();
+ renderWorkoutPackages();
+ renderPackageExerciseList();
+ renderTrainingWeek();
+ renderTodayWorkout();
 }
 function renderTrainingWeek(){
  $('trainingWeekTabs').innerHTML=DAY_NAMES.map((n,i)=>'<button class="workout-day-button '+(i===selectedWorkoutDay?'active':'')+'" data-training-day="'+i+'">'+n.slice(0,3)+'<span class="day-status">'+(workoutPackages[i].items.length?'● Package':'○ Empty')+'</span></button>').join('');
@@ -950,12 +972,12 @@ function renderTodayWorkout(){
  }else{
   const done=items.filter(it=>!!workoutChecks[workoutCheckKey(selectedWorkoutDay,it.id)]).length;
   html+='<p class="muted small">'+done+' of '+items.length+' exercises completed</p><div class="track"><div class="fill" style="width:'+(done/items.length*100)+'%"></div></div>';
-  html+=items.map(it=>{const w=exerciseById(it.exerciseId),checked=!!workoutChecks[workoutCheckKey(selectedWorkoutDay,it.id)],rec=getRecommendation(it),pr=workoutStats[it.exerciseId]?.prWeight;return '<div class="today-exercise '+(checked?'done':'')+'"><input type="checkbox" data-workout-check="'+it.id+'" '+(checked?'checked':'')+' aria-label="Complete '+w.name+'"><div><strong class="today-exercise-name">'+w.name+'</strong><div class="muted small">PR: '+(pr?pr+' lb':'Not set')+' · Working: '+(it.weight||'—')+' lb × '+it.reps+' · Overload: '+rec.weight+' lb × '+rec.reps+'</div></div><button data-today-guide="'+w.id+'">Guide</button></div>'}).join('');
+  html+=items.map(it=>{const w=exerciseById(it.exerciseId),checked=!!workoutChecks[workoutCheckKey(selectedWorkoutDay,it.id)],rec=getRecommendation(it),pr=workoutStats[it.exerciseId]?.prWeight;return '<div class="today-exercise '+(checked?'done':'')+'"><input type="checkbox" data-workout-check="'+it.id+'" '+(checked?'checked':'')+' aria-label="Complete '+w.name+'"><button class="exercise-open" data-open-exercise="'+w.id+'"><strong class="today-exercise-name">'+w.name+'</strong><small>PR: '+(pr?pr+' lb':'Not set')+' · Working: '+(it.weight||'—')+' lb × '+it.reps+' · Overload: '+rec.weight+' lb × '+rec.reps+'</small><small>Tap to view guide & edit PR</small></button></div>'}).join('');
  }
  $('todayWorkoutContent').innerHTML=html;
  const create=$('createDayPackage');if(create)create.onclick=()=>{selectedPackageDay=selectedWorkoutDay;showWorkoutPage('workoutPackages');renderWorkoutPackages();renderPackageExerciseList()};
  document.querySelectorAll('[data-workout-check]').forEach(el=>el.onchange=()=>{workoutChecks[workoutCheckKey(selectedWorkoutDay,el.dataset.workoutCheck)]=el.checked;saveWorkoutChecks();renderTodayWorkout()});
- document.querySelectorAll('[data-today-guide]').forEach(b=>b.onclick=()=>openWorkout(b.dataset.todayGuide));
+ bindExerciseOpenButtons();
 }
 function movePackageItem(day,id,delta){
  const a=workoutPackages[day].items,i=a.findIndex(x=>x.id===id),j=i+delta;if(i<0||j<0||j>=a.length)return;
@@ -978,8 +1000,9 @@ function renderWorkoutPackages(){
  document.querySelectorAll('[data-package-day]').forEach(b=>b.onclick=()=>{selectedPackageDay=Number(b.dataset.packageDay);selectedWorkoutDay=selectedPackageDay;renderWorkoutPackages();renderPackageExerciseList();renderTrainingWeek();renderTodayWorkout()});
  const items=workoutPackages[selectedPackageDay].items;
  $('packageContent').innerHTML='<div class="muted small">'+DAY_NAMES[selectedPackageDay]+' · '+items.length+' selected exercise'+(items.length===1?'':'s')+'</div>'+
- (items.length?items.map((it,i)=>{const w=exerciseById(it.exerciseId),rec=getRecommendation(it);return '<div class="package-item"><div class="package-item-main"><strong>'+w.name+'</strong><div class="muted small">'+w.categories.join(' · ')+'</div><div class="mode-switch"><button data-mode="'+it.id+'" data-value="working" class="'+(it.mode==='working'?'active':'')+'">Working Sets</button><button data-mode="'+it.id+'" data-value="overload" class="'+(it.mode==='overload'?'active':'')+'">Progressive Overload</button></div><div class="recommendation"><strong>'+(it.mode==='overload'?'Suggested session':'Working-set plan')+': '+(it.mode==='overload'?rec.weight:it.weight||'—')+' lb × '+(it.mode==='overload'?rec.reps:it.reps)+' reps</strong><div class="muted small">'+(it.mode==='overload'?rec.reason:'Comfortable repeatable load. Adjust to maintain controlled form.')+'</div></div><div class="package-fields"><label>Sets<input type="number" min="1" max="10" data-package-field="'+it.id+'" data-field="sets" value="'+it.sets+'"></label><label>Weight (lb)<input type="number" min="0" step=".5" data-package-field="'+it.id+'" data-field="weight" value="'+escWorkout(it.weight)+'"></label><label>Reps<input type="number" min="1" max="50" data-package-field="'+it.id+'" data-field="reps" value="'+it.reps+'"></label></div><button class="primary" style="margin-top:9px" data-log="'+it.id+'">Log completed sets</button></div><div class="package-item-controls"><button data-up="'+it.id+'" '+(i===0?'disabled':'')+'>↑</button><button data-down="'+it.id+'" '+(i===items.length-1?'disabled':'')+'>↓</button><button class="danger" data-remove="'+it.id+'">Remove</button></div></div>'}).join(''):'<p class="muted small">No exercises selected for this day yet.</p>')+
+ (items.length?items.map((it,i)=>{const w=exerciseById(it.exerciseId),rec=getRecommendation(it);return '<div class="package-item"><div class="package-item-main"><button class="exercise-open package-exercise-open" data-open-exercise="'+w.id+'"><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · Tap to view guide & edit PR</small></button><div class="mode-switch"><button data-mode="'+it.id+'" data-value="working" class="'+(it.mode==='working'?'active':'')+'">Working Sets</button><button data-mode="'+it.id+'" data-value="overload" class="'+(it.mode==='overload'?'active':'')+'">Progressive Overload</button></div><div class="recommendation"><strong>'+(it.mode==='overload'?'Suggested session':'Working-set plan')+': '+(it.mode==='overload'?rec.weight:it.weight||'—')+' lb × '+(it.mode==='overload'?rec.reps:it.reps)+' reps</strong><div class="muted small">'+(it.mode==='overload'?rec.reason:'Comfortable repeatable load. Adjust to maintain controlled form.')+'</div></div><div class="package-fields"><label>Sets<input type="number" min="1" max="10" data-package-field="'+it.id+'" data-field="sets" value="'+it.sets+'"></label><label>Weight (lb)<input type="number" min="0" step=".5" data-package-field="'+it.id+'" data-field="weight" value="'+escWorkout(it.weight)+'"></label><label>Reps<input type="number" min="1" max="50" data-package-field="'+it.id+'" data-field="reps" value="'+it.reps+'"></label></div><button class="primary" style="margin-top:9px" data-log="'+it.id+'">Log completed sets</button></div><div class="package-item-controls"><button data-up="'+it.id+'" '+(i===0?'disabled':'')+'>↑</button><button data-down="'+it.id+'" '+(i===items.length-1?'disabled':'')+'>↓</button><button class="danger" data-remove="'+it.id+'">Remove</button></div></div>'}).join(''):'<p class="muted small">No exercises selected for this day yet.</p>')+
  '<div id="trainingLogger"></div><div id="packageHistory"></div>';
+ bindExerciseOpenButtons();
  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const it=items.find(x=>x.id===b.dataset.mode);if(it){it.mode=b.dataset.value;saveWorkoutData();renderWorkoutPackages()}});
  document.querySelectorAll('[data-package-field]').forEach(el=>el.onchange=()=>{const it=items.find(x=>x.id===el.dataset.packageField);if(!it)return;it[el.dataset.field]=el.value;saveWorkoutData();renderWorkoutPackages()});
  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>movePackageItem(selectedPackageDay,b.dataset.up,-1));
