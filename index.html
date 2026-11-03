@@ -282,7 +282,7 @@ function makeDay(i){
  const tasks=defaults.map((x,n)=>({id:'d'+n,name:x[2],detail:x[3],start:x[0],end:x[1],duration:Math.max(10,Math.round((new Date('2000-01-01T'+x[1])-new Date('2000-01-01T'+x[0]))/60000)),work:WORK_IDS.has('d'+n)}));
  return {workday,tasks};
 }
-if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i));}
+if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i)); const oldCustom=JSON.parse(localStorage.getItem('dc_custom')||'[]'); const todayIndex=(new Date().getDay()+6)%7; oldCustom.forEach((x,n)=>weekPlan[todayIndex].tasks.push({...x,id:'legacy'+n,duration:30,work:false}));}
 weekPlan.forEach((d,i)=>{if(!d||!Array.isArray(d.tasks))weekPlan[i]=makeDay(i);});
 function savePlan(){localStorage.setItem('dc_week_plan',JSON.stringify(weekPlan))}
 function dayTasks(i){return weekPlan[i].tasks.filter(t=>weekPlan[i].workday||!t.work)}
@@ -294,7 +294,7 @@ function autoFitDay(i){
  const fixedStart=timeToMin(shift(workStart,-15)),fixedEnd=timeToMin(shift(workEnd,15));
  let cursor=7*60;
  tasks.forEach(t=>{
-   if(t.work){t.start=t.id==='d4'?shift(workStart,-15):t.id==='d5'?workStart:t.id==='d6'?'12:00':t.id==='d7'?workEnd:shift(workEnd,0);t.end=t.id==='d4'?workStart:t.id==='d5'?'12:00':t.id==='d6'?'12:30':t.id==='d7'?workEnd:shift(workEnd,15);return;}
+   if(t.work){const fixed={d4:[shift(workStart,-15),workStart],d5:[workStart,'12:00'],d6:['12:00','12:30'],d7:['12:30',workEnd],d8:[workEnd,shift(workEnd,15)]}[t.id];if(fixed){t.start=fixed[0];t.end=fixed[1]}return;}
    let dur=duration(t),start=cursor;
    if(d.workday&&start<fixedEnd&&start+dur>fixedStart)start=fixedEnd;
    if(start+dur>23*60){start=Math.max(7*60,fixedStart-dur);if(d.workday&&start+dur>fixedStart)start=fixedEnd;}
@@ -346,8 +346,7 @@ $('reset').onclick=()=>{if(confirm('Reset this day’s checkmarks?')){let prefix
 $('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').value;if(!workStart||!workEnd){alert('Enter both work times.');return}localStorage.setItem('dc_start',workStart);localStorage.setItem('dc_end',workEnd);autoFitAll()};
 $('clear').onclick=()=>{if(confirm('Clear all saved checkmarks and custom tasks? Your weekly layout and streaks will stay saved.')){checks={};custom=[];localStorage.removeItem('dc_checks');localStorage.removeItem('dc_custom');localStorage.setItem('dc_checks','{}');render()}};
 $('dailyDay').value=String(selectedDay);
-weekPlan.forEach((d,i)=>{if(!d.workday)d.tasks=d.tasks.filter(t=>!t.work);});
-savePlan();render();renderWeek();renderStreaks();clock();
+autoFitAll();
 
 setInterval(clock,15000);setInterval(reminders,30000);
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
