@@ -56,6 +56,15 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 .week-day-head label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .week-day-head input{accent-color:var(--green)}
 .core-days{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0}
+.routine-scroll{overflow-x:auto;margin-top:14px}
+.routine-table{width:100%;border-collapse:collapse;min-width:500px;font-size:13px}
+.routine-table th,.routine-table td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:center}
+.routine-table th:first-child,.routine-table td:first-child{text-align:left;min-width:145px}
+.routine-table input{width:18px;height:18px;accent-color:var(--green)}
+.routine-table .activity-name{font-weight:600}
+.routine-table .activity-hint{display:block;color:var(--muted);font-size:11px;font-weight:400}
+.routine-table tr.work-row{background:#14243a}
+.routine-table input:disabled{opacity:.3}
 .core-day-option{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;color:var(--muted);font-size:13px}
 .core-day-option input,.shift-toggle input{accent-color:var(--green)}
 .core-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
@@ -104,11 +113,13 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 </section>
 <section class="section" id="core">
  <div class="card">
-  <div class="kicker">Recurring priorities</div><h3>Core Subjects</h3>
-  <p class="muted small">Add the activities or priorities you want to make room for each week, choose the days they belong on, and set how much time they need. Daily Compass will fit them around your shifts and other commitments.</p>
-  <div class="row" style="margin:12px 0"><input id="coreName" type="text" placeholder="e.g. Card business, study, workout"><input id="coreDuration" type="number" min="10" max="480" step="5" value="60" style="width:100px" aria-label="Duration in minutes"><span class="muted small">minutes</span></div>
+  <div class="kicker">Build your routine</div><h3>What needs to be part of each day?</h3>
+  <p class="muted small">Turn activities on for the days you need them. Work uses the shifts saved in Settings; the rest of your routine is automatically arranged around work and the other selected activities.</p>
+  <div class="routine-scroll"><table class="routine-table"><thead><tr><th>Activity</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead><tbody id="routineMatrix"></tbody></table></div>
+  <div class="kicker" style="margin-top:18px">Add your own activity</div>
+  <div class="row" style="margin:10px 0"><input id="coreName" type="text" placeholder="e.g. Card business, study, errands"><input id="coreDuration" type="number" min="10" max="480" step="5" value="60" style="width:100px" aria-label="Duration in minutes"><span class="muted small">minutes</span></div>
   <div class="core-days" id="coreDayChoices"></div>
-  <button class="primary" id="addCore" style="margin-top:10px">Add core subject</button>
+  <button class="primary" id="addCore" style="margin-top:10px">Add activity to routine</button>
   <div id="coreList" style="margin-top:14px"></div>
  </div>
 </section>
@@ -302,10 +313,10 @@ let weekPlan=JSON.parse(localStorage.getItem('dc_week_plan')||'null');
 function makeDay(i){
  const workday=i<5;
  const tasks=defaults.map((x,n)=>({id:'d'+n,name:x[2],detail:x[3],start:x[0],end:x[1],duration:Math.max(10,Math.round((new Date('2000-01-01T'+x[1])-new Date('2000-01-01T'+x[0]))/60000)),work:WORK_IDS.has('d'+n)}));
- return {workday,workStart,workEnd,tasks};
+ return {workday,workStart,workEnd,tasks,enabled:Object.fromEntries(tasks.map(t=>[t.id,true]))};
 }
 if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i)); const oldCustom=JSON.parse(localStorage.getItem('dc_custom')||'[]'); const todayIndex=(new Date().getDay()+6)%7; oldCustom.forEach((x,n)=>weekPlan[todayIndex].tasks.push({...x,id:'legacy'+n,duration:30,work:false}));}
-weekPlan.forEach((d,i)=>{if(!d||!Array.isArray(d.tasks))weekPlan[i]=makeDay(i);if(!d.workStart)d.workStart=workStart;if(!d.workEnd)d.workEnd=workEnd;});
+weekPlan.forEach((d,i)=>{if(!d||!Array.isArray(d.tasks))weekPlan[i]=makeDay(i);if(!d.workStart)d.workStart=workStart;if(!d.workEnd)d.workEnd=workEnd;if(!d.enabled)d.enabled=Object.fromEntries(d.tasks.map(t=>[t.id,true]));});
 function savePlan(){localStorage.setItem('dc_week_plan',JSON.stringify(weekPlan))}
 function saveCore(){localStorage.setItem('dc_core_subjects',JSON.stringify(coreSubjects))}
 function syncCoreTasks(){
@@ -314,7 +325,7 @@ function syncCoreTasks(){
   coreSubjects.filter(s=>s.days.includes(i)).forEach(s=>day.tasks.push({id:'core-'+s.id,name:s.name,detail:'Core subject · '+s.duration+' min',start:'19:00',end:shift('19:00',s.duration),duration:s.duration,work:false,core:true}));
  });
 }
-function dayTasks(i){return weekPlan[i].tasks.filter(t=>weekPlan[i].workday||!t.work)}
+function dayTasks(i){return weekPlan[i].tasks.filter(t=>(!t.work||weekPlan[i].workday)&&(t.work||weekPlan[i].enabled?.[t.id]!==false))}
 function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
 function minToTime(n){n=Math.max(0,Math.min(1439,n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function duration(t){return Math.max(10,Number(t.duration)||30)}
@@ -402,9 +413,38 @@ $('saveWork').onclick=()=>{
  autoFitDay(i);savePlan();render();renderWeek();loadShiftEditor();
  $('shiftSaved').textContent=DAY_NAMES[i]+' saved: '+(working?start+'–'+end:'Day off')+'.';
 };
+const ROUTINE_GROUPS=[
+ {name:'Work',hint:'Shift and commute · set in Settings',work:true},
+ {name:'Sleep',hint:'Overnight rest target'},
+ {name:'Meals',hint:'Breakfast, lunch and dinner',ids:['d2','d6','d12']},
+ {name:'Personal care',hint:'Morning and evening hygiene',ids:['d0','d1','d3','d11','d17']},
+ {name:'Exercise',hint:'Training, cardio or walking',ids:['d10']},
+ {name:'Card business / projects',hint:'Dedicated focus time',ids:['d13']},
+ {name:'Hobbies / gaming',hint:'Personal downtime',ids:['d14']},
+ {name:'Social time',hint:'Friends, family and connection',ids:['d15']},
+ {name:'Daily reset',hint:'Decompress and prepare for tomorrow',ids:['d9','d16']}
+];
+function routineIds(group){return group.work?['d4','d5','d6','d7','d8']:group.name==='Sleep'?['d18']:group.ids}
 function renderCore(){
+ $('routineMatrix').innerHTML=ROUTINE_GROUPS.map(g=>{
+  const ids=routineIds(g);
+  return '<tr class="'+(g.work?'work-row':'')+'"><td><span class="activity-name">'+g.name+'</span><span class="activity-hint">'+g.hint+'</span></td>'+
+   DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+g.name+' on '+n+'" data-routine-group="'+(g.work?'work':g.name)+'" data-routine-day="'+i+'" '+(g.work?weekPlan[i].workday:ids.some(id=>weekPlan[i].enabled?.[id]!==false)?'checked':'')+'></td>').join('')+'</tr>';
+ }).join('')+
+ coreSubjects.map(s=>'<tr><td><span class="activity-name">'+esc(s.name)+'</span><span class="activity-hint">Custom activity · '+s.duration+' min</span></td>'+DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+esc(s.name)+' on '+n+'" data-custom-core="'+s.id+'" data-custom-day="'+i+'" '+(s.days.includes(i)?'checked':'')+'></td>').join('')+'</tr>').join('');
+ document.querySelectorAll('[data-routine-group]').forEach(el=>el.onchange=()=>{
+  const i=Number(el.dataset.routineDay),group=ROUTINE_GROUPS.find(g=>(g.work?'work':g.name)===el.dataset.routineGroup);
+  if(group.work)weekPlan[i].workday=el.checked;
+  else routineIds(group).forEach(id=>weekPlan[i].enabled[id]=el.checked);
+  autoFitDay(i);savePlan();render();renderWeek();loadShiftEditor();
+ });
+ document.querySelectorAll('[data-custom-core]').forEach(el=>el.onchange=()=>{
+  const s=coreSubjects.find(x=>x.id===el.dataset.customCore),i=Number(el.dataset.customDay);if(!s)return;
+  s.days=el.checked?[...new Set([...s.days,i])]:s.days.filter(x=>x!==i);
+  saveCore();syncCoreTasks();autoFitDay(i);savePlan();render();renderWeek();renderCore();
+ });
  $('coreDayChoices').innerHTML=DAY_NAMES.map((n,i)=>'<label class="core-day-option"><input type="checkbox" value="'+i+'" data-core-day> '+n.slice(0,3)+'</label>').join('');
- $('coreList').innerHTML=coreSubjects.length?coreSubjects.map(s=>'<div class="core-entry"><div><strong>'+esc(s.name)+'</strong><small>'+s.duration+' min · '+s.days.map(i=>DAY_NAMES[i].slice(0,3)).join(', ')+'</small></div><button class="danger" data-delete-core="'+s.id+'">Remove</button></div>').join(''):'<p class="muted small">No core subjects yet. Add the recurring activities you want to protect time for.</p>';
+ $('coreList').innerHTML=coreSubjects.length?coreSubjects.map(s=>'<div class="core-entry"><div><strong>'+esc(s.name)+'</strong><small>'+s.duration+' min · '+s.days.map(i=>DAY_NAMES[i].slice(0,3)).join(', ')+'</small></div><button class="danger" data-delete-core="'+s.id+'">Remove</button></div>').join(''):'<p class="muted small">No custom activities added.</p>';
  document.querySelectorAll('[data-delete-core]').forEach(b=>b.onclick=()=>{coreSubjects=coreSubjects.filter(s=>s.id!==b.dataset.deleteCore);saveCore();syncCoreTasks();autoFitAll();renderCore()});
 }
 $('addCore').onclick=()=>{
