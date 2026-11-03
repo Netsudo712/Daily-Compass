@@ -237,6 +237,10 @@ main{padding-bottom:100px}
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Time display</div><label class="setting-toggle"><span><strong>Military time</strong><small>Show times as 14:30 instead of 2:30 PM</small></span><input type="checkbox" id="militaryTime"></label>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+ <div class="kicker">App updates</div>
+ <p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+ <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
  <div class="kicker">Your sleep target</div><p>11:00 PM–7:00 AM · 8 hours</p>
@@ -484,6 +488,27 @@ function loadShiftEditor(){
  $('workStart').disabled=!d.workday;$('workEnd').disabled=!d.workday;
  $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+formatRange(d.workStart,d.workEnd):' is currently marked as a day off')+'.';
 }
+let updateCheckInProgress=false;
+let reloadAfterWorkerUpdate=false;
+if('serviceWorker'in navigator){
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+  if(!reloadAfterWorkerUpdate){reloadAfterWorkerUpdate=true;location.reload();}
+ });
+}
+$('checkUpdates').onclick=async()=>{
+ const button=$('checkUpdates'),status=$('updateStatus');
+ if(updateCheckInProgress)return;
+ updateCheckInProgress=true;button.disabled=true;status.textContent='Checking for updates…';
+ try{
+  if(!('serviceWorker'in navigator)){status.textContent='App updates are not supported in this browser.';return;}
+  const registration=await navigator.serviceWorker.getRegistration();
+  if(!registration){status.textContent='Update service is not ready. Try reopening the app online.';return;}
+  await registration.update();
+  if(registration.installing||registration.waiting){status.textContent='Update found. Installing now…';}
+  else{status.textContent='You’re up to date.';}
+ }catch(error){status.textContent='Could not check right now. Connect to the internet and try again.';}
+ finally{updateCheckInProgress=false;button.disabled=false;}
+};
 $('militaryTime').checked=militaryTime;
 $('militaryTime').onchange=()=>{militaryTime=$('militaryTime').checked;localStorage.setItem('dc_military_time',String(militaryTime));clock();render();renderWeek();loadShiftEditor()};
 $('shiftDay').onchange=loadShiftEditor;
