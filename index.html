@@ -230,6 +230,7 @@ body[data-mode="light"] .item.done .task{color:#8a96a6}
 @media(max-width:600px){.app-header{padding:17px 14px 7px}.app-header h1{font-size:21px}.home-overview{grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:14px 13px;margin:8px 0 14px}.overview-time{font-size:31px}.overview-progress{min-width:118px}.appearance-controls{grid-template-columns:1fr}.accent-swatches{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.swatch-dot{width:32px;height:32px}}
 
 
+.settings-group{margin-bottom:22px}.settings-group-heading{margin:4px 2px 12px}.settings-group-heading h3{margin:3px 0 4px;font-size:18px}.settings-group-heading p{margin:0}.settings-group>.card+.card{margin-top:12px}
 /* Stronger theme expression across controls, actions and highlights */
 :root{--accent-glow:color-mix(in srgb,var(--accent) 24%,transparent);--accent-wash:color-mix(in srgb,var(--accent) 11%,var(--panel));--accent-border:color-mix(in srgb,var(--accent) 48%,var(--line))}
 button,.tab,.zoom-btn{transition:background .18s,border-color .18s,color .18s,box-shadow .18s,transform .18s}
@@ -345,46 +346,52 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
 </section>
 
 <section class="section" id="settings">
- <div class="card">
-  <div class="kicker">Appearance</div><h3>Make it yours</h3>
-  <p class="muted small">Choose a light or dark interface and an accent color. Your choices are saved on this device.</p>
-  <div class="appearance-controls">
-   <label class="appearance-field"><span>Interface mode</span><select id="themeMode"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+ <div class="settings-group">
+  <div class="settings-group-heading"><div class="kicker">Your routine</div><h3>Schedule &amp; sleep</h3><p class="muted small">The important settings that shape your daily and weekly plan.</p></div>
+  <div class="card">
+   <div class="kicker">Work schedule</div><h3>Edit each day's shift</h3>
+   <div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div>
+   <div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div>
+   <p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
   </div>
-  <div class="accent-picker">
-   <div class="accent-picker-heading"><strong>Choose your color theme</strong><span class="muted small">Tap a color to preview it</span></div>
-   <div class="accent-swatches" role="group" aria-label="Color themes">
-    <button type="button" class="accent-swatch" data-accent-choice="blue" aria-label="Ocean blue" aria-pressed="false"><span class="swatch-dot"></span><span>Ocean</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="violet" aria-label="Violet" aria-pressed="false"><span class="swatch-dot"></span><span>Violet</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="green" aria-label="Forest green" aria-pressed="false"><span class="swatch-dot"></span><span>Forest</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="rose" aria-label="Rose" aria-pressed="false"><span class="swatch-dot"></span><span>Rose</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="amber" aria-label="Amber" aria-pressed="false"><span class="swatch-dot"></span><span>Amber</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="teal" aria-label="Teal" aria-pressed="false"><span class="swatch-dot"></span><span>Teal</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="sunset" aria-label="Sunset" aria-pressed="false"><span class="swatch-dot"></span><span>Sunset</span></button>
-    <button type="button" class="accent-swatch" data-accent-choice="slate" aria-label="Slate" aria-pressed="false"><span class="swatch-dot"></span><span>Slate</span></button>
+  <div class="card">
+   <div class="kicker">Sleep target</div><h3>Set your sleep schedule</h3><p class="muted small">Choose when you want to go to bed and wake up. Daily Compass will use this target when arranging your routine.</p>
+   <div class="row" style="margin-top:10px;gap:14px"><label>Bedtime <input type="time" id="sleepStart" value="23:00"></label><label>Wake-up <input type="time" id="sleepEnd" value="07:00"></label><button class="primary" id="saveSleep">Save sleep target</button></div>
+   <p class="muted small" id="sleepSaved" aria-live="polite">Current target: 11:00 PM–7:00 AM · 8 hours.</p>
+  </div>
+ </div>
+ <div class="settings-group">
+  <div class="settings-group-heading"><div class="kicker">Personalization</div><h3>Make it yours</h3><p class="muted small">Adjust the look and feel of Daily Compass.</p></div>
+  <div class="card">
+   <div class="kicker">Appearance</div>
+   <div class="appearance-controls"><label class="appearance-field"><span>Interface mode</span><select id="themeMode"><option value="dark">Dark</option><option value="light">Light</option></select></label></div>
+   <div class="accent-picker"><div class="accent-picker-heading"><strong>Choose your color theme</strong><span class="muted small">Tap a color to preview it</span></div>
+    <div class="accent-swatches" role="group" aria-label="Color themes">
+     <button type="button" class="accent-swatch" data-accent-choice="blue" aria-label="Ocean blue" aria-pressed="false"><span class="swatch-dot"></span><span>Ocean</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="violet" aria-label="Violet" aria-pressed="false"><span class="swatch-dot"></span><span>Violet</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="green" aria-label="Forest green" aria-pressed="false"><span class="swatch-dot"></span><span>Forest</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="rose" aria-label="Rose" aria-pressed="false"><span class="swatch-dot"></span><span>Rose</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="amber" aria-label="Amber" aria-pressed="false"><span class="swatch-dot"></span><span>Amber</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="teal" aria-label="Teal" aria-pressed="false"><span class="swatch-dot"></span><span>Teal</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="sunset" aria-label="Sunset" aria-pressed="false"><span class="swatch-dot"></span><span>Sunset</span></button>
+     <button type="button" class="accent-swatch" data-accent-choice="slate" aria-label="Slate" aria-pressed="false"><span class="swatch-dot"></span><span>Slate</span></button>
+    </div>
    </div>
   </div>
  </div>
- <div class="card"><div class="kicker">Work schedule</div><h3>Edit each day's shift</h3><div class="row"><label>Day <select id="shiftDay" aria-label="Select workday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="shift-toggle"><input type="checkbox" id="shiftWorking"> Working this day</label></div><div class="row" style="margin-top:10px"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save this day</button></div><p class="muted small" id="shiftSaved">Choose a day, set whether you're working, then save its shift. Each day remembers its own hours.</p>
- <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <div class="kicker">Time display</div><label class="setting-toggle"><span><strong>Military time</strong><small>Show times as 14:30 instead of 2:30 PM</small></span><input type="checkbox" id="militaryTime"></label>
- <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <div class="kicker">App updates</div>
- <p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
- <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
- <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
- <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <div class="kicker">Sleep target</div><h3>Set your sleep schedule</h3>
- <p class="muted small">Choose when you want to go to bed and wake up. Daily Compass will use this target when arranging your routine.</p>
- <div class="row" style="margin-top:10px;gap:14px">
-  <label>Bedtime <input type="time" id="sleepStart" value="23:00"></label>
-  <label>Wake-up <input type="time" id="sleepEnd" value="07:00"></label>
-  <button class="primary" id="saveSleep">Save sleep target</button>
+ <div class="settings-group">
+  <div class="settings-group-heading"><div class="kicker">App settings</div><h3>Preferences &amp; maintenance</h3><p class="muted small">Controls for how the app behaves and stays up to date.</p></div>
+  <div class="card">
+   <div class="kicker">Time display</div><label class="setting-toggle"><span><strong>Military time</strong><small>Show times as 14:30 instead of 2:30 PM</small></span><input type="checkbox" id="militaryTime"></label>
+   <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+   <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button> <span class="muted small" id="notifyStatus"></span>
+   <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+   <div class="kicker">App updates</div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+   <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
+   <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+   <div class="kicker">Data</div><p class="muted small">Clear saved checkmarks and one-off custom tasks. Your weekly layout and streaks will stay saved.</p><button class="danger" id="clear">Clear saved checkmarks and custom tasks</button>
+  </div>
  </div>
- <p class="muted small" id="sleepSaved" aria-live="polite">Current target: 11:00 PM–7:00 AM · 8 hours.</p>
- <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
- <button class="danger" id="clear">Clear saved checkmarks and custom tasks</button></div>
 </section>
 </main>
 <script>
