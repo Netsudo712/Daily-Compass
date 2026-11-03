@@ -328,6 +328,33 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
 .workout-note{font-size:13px;color:var(--muted);line-height:1.5}
 @media(max-width:600px){.workout-info-grid{grid-template-columns:1fr 1fr}.workout-fields{gap:8px}.workout-card{align-items:flex-start;flex-direction:column}}
 
+
+/* Workout workspace v26 */
+.workout-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.workout-toolbar input,.workout-toolbar select,.package-controls select,.package-item input,.package-item select,.training-log input,.training-log select{background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px;min-width:0}
+.workout-filter{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.workout-filter button.active{background:#25466f;border-color:#4776ae}
+.exercise-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.exercise-tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.exercise-tile strong{display:block}.exercise-tile small{color:var(--muted)}
+.package-day-tabs{display:flex;gap:6px;overflow-x:auto;margin:12px 0;padding-bottom:4px}
+.package-day-tabs button{white-space:nowrap}.package-day-tabs button.active{background:#25466f;border-color:#4776ae}
+.package-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.package-item-main{min-width:0}.package-item-controls{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.package-item-controls button{padding:7px 9px}
+.package-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}
+.package-fields label,.training-log label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:11px}
+.mode-switch{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.mode-switch button.active{background:#25466f;border-color:#4776ae}
+.guide-visual{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.guide-visual svg{display:block;width:100%;max-height:210px}
+.guide-columns{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.training-log{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.training-log-row{display:grid;grid-template-columns:36px 1fr 1fr;gap:7px;align-items:end;margin:8px 0}
+.history-row{padding:8px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.recommendation{border:1px solid var(--accent);background:var(--panel2);border-radius:12px;padding:12px;margin:10px 0}
+@media(max-width:600px){.exercise-grid{grid-template-columns:1fr}.package-fields{grid-template-columns:1fr 1fr}.guide-columns{grid-template-columns:1fr}.package-item{grid-template-columns:1fr}.package-item-controls{justify-content:flex-start}}
+
 </style>
 </head>
 <body>
@@ -374,17 +401,20 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
 
 <section class="section" id="workouts">
  <div class="card" id="workoutLibrary">
-  <div class="kicker">Training library</div>
-  <h3 style="margin:5px 0">Choose your workouts</h3>
-  <p class="muted small">Start with one movement. Assign it to the days you want it in your routine, then open its guide for form, targets and personal records.</p>
-  <div id="workoutList"></div>
+  <div class="kicker">Training workspace</div><h3 style="margin:5px 0">Exercise library</h3>
+  <p class="muted small">Browse movements by muscle group, then add them to a weekday package. Each day has its own plan.</p>
+  <div class="workout-toolbar"><input id="exerciseSearch" type="search" placeholder="Search exercises…" aria-label="Search exercises"><select id="exerciseCategory" aria-label="Filter muscle group"><option value="All">All muscle groups</option><option>Arms</option><option>Chest</option><option>Back</option><option>Legs</option><option>Shoulders</option><option>Core</option></select></div>
+  <div id="exerciseFilters" class="workout-filter"></div><div id="workoutList" class="exercise-grid"></div>
+ </div>
+ <div class="card" style="margin-top:12px" id="workoutPackages">
+  <div class="kicker">Your weekly training plan</div><h3 style="margin:5px 0">Build a workout package</h3>
+  <p class="muted small">Choose a day, then add exercises like ingredients. Set each movement's own mode, weight, reps and sets.</p>
+  <div id="packageDayTabs" class="package-day-tabs"></div><div id="packageContent"></div>
  </div>
  <div class="card" id="workoutDetail" style="display:none;margin-top:12px">
-  <div class="row" style="justify-content:space-between"><button id="workoutBack">← Workout library</button><span class="pill">Exercise guide</span></div>
-  <div id="workoutDetailContent"></div>
+  <div class="row" style="justify-content:space-between"><button id="workoutBack">← Workout workspace</button><span class="pill">Exercise guide</span></div><div id="workoutDetailContent"></div>
  </div>
 </section>
-
 <section class="section" id="streaks">
  <div class="card">
   <div class="kicker">Consistency & accountability</div>
@@ -460,7 +490,7 @@ body[data-mode="light"] .week-day.drag-over{background:color-mix(in srgb,var(--a
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button> <span class="muted small" id="notifyStatus"></span>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
-   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v25</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
+   <div class="row" style="justify-content:space-between;align-items:center"><div class="kicker">App updates</div><span class="version-label">Current version <strong id="appVersion">v26</strong></span></div><p class="muted small">Check for a newer version of Daily Compass. If an update is available, it will install and reload automatically. Your saved schedule and trackers stay on this device.</p>
    <div class="row"><button class="primary" id="checkUpdates">Check for updates</button><span class="muted small" id="updateStatus" aria-live="polite"></span></div>
    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
    <div class="kicker">Data</div><p class="muted small">Clear saved checkmarks and one-off custom tasks. Your weekly layout and streaks will stay saved.</p><button class="danger" id="clear">Clear saved checkmarks and custom tasks</button>
@@ -636,234 +666,106 @@ function reminders(){if(!('Notification'in window)||Notification.permission!=='g
 
 const DAY_NAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
-const WORKOUT_LIBRARY=[{id:'bicep-curl',name:'Bicep Curl',equipment:'Dumbbells',muscles:'Biceps brachii (primary), brachialis and brachioradialis (assisting)',type:'Isolation · upper body',description:'A controlled elbow-flexion exercise that trains the front of the upper arm. Keep your upper arms close to your sides and avoid swinging your torso.',steps:['Stand tall with a dumbbell in each hand, palms facing forward and elbows near your sides.','Keep your shoulders relaxed and curl the weights by bending your elbows.','Pause briefly near shoulder height without letting your elbows drift forward.','Lower slowly until your arms are almost straight. Keep the movement controlled.'],form:'Keep wrists neutral, ribs stacked over your hips and elbows mostly still. Use a weight you can control without leaning back or swinging.',sets:'A simple starting point is 2–3 sets of 8–12 controlled reps. Stop if you feel sharp pain; reduce the load if you need momentum.'}];
+const WORKOUT_LIBRARY=[
+{id:'bicep-curl',name:'Bicep Curl',equipment:'Dumbbells',categories:['Arms'],primary:'Biceps brachii',secondary:'Brachialis, brachioradialis',type:'Isolation',start:'Stand tall, dumbbells by your sides, palms forward and elbows close to your ribs.',steps:['Brace your torso and keep your upper arms still.','Bend your elbows to curl the weights toward your shoulders.','Pause briefly without shrugging or swinging.','Lower slowly until your arms are nearly straight.'],moves:'Forearms rotate upward around the elbow; upper arms and torso stay quiet.',mistakes:'Swinging the torso, drifting elbows forward, bending the wrists or dropping the weight quickly.',visual:'curl'},
+{id:'hammer-curl',name:'Hammer Curl',equipment:'Dumbbells',categories:['Arms'],primary:'Brachialis',secondary:'Biceps brachii, brachioradialis',type:'Isolation',start:'Stand with dumbbells at your sides, palms facing inward toward each other.',steps:['Keep palms facing inward throughout the movement.','Curl by bending the elbows without moving the upper arms.','Pause near shoulder height.','Lower under control to the starting position.'],moves:'Forearms move; elbows stay near your sides and wrists remain neutral.',mistakes:'Rotating palms upward, swinging, shrugging or letting elbows travel forward.',visual:'curl'},
+{id:'triceps-extension',name:'Overhead Triceps Extension',equipment:'Dumbbell',categories:['Arms','Shoulders'],primary:'Triceps brachii',secondary:'Shoulders stabilize',type:'Isolation',start:'Hold one dumbbell overhead with arms extended and elbows pointing forward.',steps:['Brace your core and keep upper arms close to your head.','Bend your elbows to lower the weight behind your head.','Extend your elbows to return overhead.','Move smoothly and use a comfortable range.'],moves:'Forearms hinge at the elbows; upper arms remain mostly still.',mistakes:'Flaring elbows, arching the lower back or moving too fast.',visual:'overhead'},
+{id:'push-up',name:'Push-Up',equipment:'Bodyweight',categories:['Chest','Arms','Core'],primary:'Pectorals',secondary:'Triceps, anterior deltoids, core',type:'Compound',start:'Start in a high plank with hands slightly wider than shoulders and body in a straight line.',steps:['Brace your abdomen and squeeze your glutes.','Bend elbows to lower your chest toward the floor.','Keep elbows angled slightly back rather than straight out.','Press the floor away to return to the top.'],moves:'Elbows bend and straighten; trunk stays rigid from shoulders to heels.',mistakes:'Sagging hips, flared elbows, partial range or craning the neck.',visual:'push'},
+{id:'dumbbell-row',name:'One-Arm Dumbbell Row',equipment:'Dumbbell and bench',categories:['Back','Arms'],primary:'Latissimus dorsi',secondary:'Rhomboids, traps, biceps',type:'Compound',start:'Support one hand on a bench, hinge at the hips and let the dumbbell hang below your shoulder.',steps:['Keep your spine neutral and shoulders square.','Pull your elbow toward your hip.','Pause and squeeze your back without twisting.','Lower the dumbbell slowly.'],moves:'Shoulder blade and upper arm draw back; torso stays stable.',mistakes:'Rotating the torso, shrugging, rounding the back or yanking the weight.',visual:'row'},
+{id:'bodyweight-squat',name:'Bodyweight Squat',equipment:'Bodyweight',categories:['Legs','Core'],primary:'Quadriceps and glutes',secondary:'Adductors, hamstrings, core',type:'Compound',start:'Stand about shoulder-width apart with feet planted and toes turned slightly outward.',steps:['Brace your midsection and begin by bending hips and knees.','Sit down between your legs while keeping heels grounded.','Lower only as far as you can maintain control and a neutral trunk.','Drive through the floor to stand tall.'],moves:'Hips and knees bend together; feet stay planted and knees track with toes.',mistakes:'Heels lifting, knees collapsing inward, losing balance or forcing depth.',visual:'squat'}
+];
 let workoutDays=JSON.parse(localStorage.getItem('dc_workout_days')||'{}');
 let workoutStats=JSON.parse(localStorage.getItem('dc_workout_stats')||'{}');
-let activeWorkoutId=null;
-function saveWorkoutData(){localStorage.setItem('dc_workout_days',JSON.stringify(workoutDays));localStorage.setItem('dc_workout_stats',JSON.stringify(workoutStats))}
-function syncWorkoutTasks(){
- WORKOUT_LIBRARY.forEach(w=>{
-  const days=Array.isArray(workoutDays[w.id])?workoutDays[w.id]:[];
-  weekPlan.forEach((day,i)=>{
-   const id='workout-'+w.id;
-   day.tasks=day.tasks.filter(t=>t.id!==id);
-   if(days.includes(i))day.tasks.push({id,name:'Workout: '+w.name,detail:'Training session · see Workout tab',start:'18:00',end:'18:30',duration:30,work:false,workout:true});
-  });
- });
-}
-
-let coreSubjects=JSON.parse(localStorage.getItem('dc_core_subjects')||'[]');
-const WORK_IDS=new Set(['d4','d5','d6','d7','d8']);
-let selectedDay=(new Date().getDay()+6)%7;
-let weekPlan=JSON.parse(localStorage.getItem('dc_week_plan')||'null');
-function makeDay(i){
- const workday=i<5;
- const tasks=defaults.map((x,n)=>({id:'d'+n,name:x[2],detail:x[3],start:x[0],end:x[1],duration:n===18?480:Math.max(10,Math.round((new Date('2000-01-01T'+x[1])-new Date('2000-01-01T'+x[0]))/60000)),overnight:n===18,work:WORK_IDS.has('d'+n)}));
- return {workday,workStart,workEnd,tasks,enabled:Object.fromEntries(tasks.map(t=>[t.id,true]))};
-}
-if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i)); const oldCustom=JSON.parse(localStorage.getItem('dc_custom')||'[]'); const todayIndex=(new Date().getDay()+6)%7; oldCustom.forEach((x,n)=>weekPlan[todayIndex].tasks.push({...x,id:'legacy'+n,duration:30,work:false}));}
-weekPlan.forEach((d,i)=>{if(!d||!Array.isArray(d.tasks))weekPlan[i]=makeDay(i);if(!d.workStart)d.workStart=workStart;if(!d.workEnd)d.workEnd=workEnd;if(!d.enabled)d.enabled=Object.fromEntries(d.tasks.map(t=>[t.id,true]));});
-syncWorkoutTasks();
-function savePlan(){localStorage.setItem('dc_week_plan',JSON.stringify(weekPlan))}
-function saveCore(){localStorage.setItem('dc_core_subjects',JSON.stringify(coreSubjects))}
-function syncCoreTasks(){
- weekPlan.forEach((day,i)=>{
-  day.tasks=day.tasks.filter(t=>!String(t.id).startsWith('core-'));
-  coreSubjects.filter(s=>s.days.includes(i)).forEach(s=>day.tasks.push({id:'core-'+s.id,name:s.name,detail:'Core subject · '+s.duration+' min',start:'19:00',end:shift('19:00',s.duration),duration:s.duration,work:false,core:true}));
- });
-}
-function dayTasks(i){return weekPlan[i].tasks.filter(t=>(!t.work||weekPlan[i].workday)&&(t.work||weekPlan[i].enabled?.[t.id]!==false))}
-function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
-function minToTime(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
-function duration(t){return Math.max(10,Number(t.duration)||30)}
-function sleepDurationMinutes(){
- const start=timeToMin(sleepStartTarget),end=timeToMin(sleepEndTarget);
- return (end-start+1440)%1440;
-}
-function sleepTargetLabel(){
- const minutes=sleepDurationMinutes(),hours=Math.floor(minutes/60),mins=minutes%60;
- return formatTime(sleepStartTarget)+'–'+formatTime(sleepEndTarget)+' · '+hours+(mins?'.'+String(mins).padStart(2,'0'):'')+' hours';
-}
-function autoFitDay(i){
- const d=weekPlan[i],tasks=dayTasks(i),occupied=[];
- const ws=timeToMin(d.workStart||workStart),we=timeToMin(d.workEnd||workEnd);
- const breakStart=Math.round((ws+we-30)/2),breakEnd=breakStart+30;
- const sleepStart=timeToMin(sleepStartTarget),sleepEnd=sleepStart+sleepDurationMinutes();
- const fixed={d4:[minToTime(ws-15),minToTime(ws)],d5:[minToTime(ws),minToTime(breakStart)],d6:[minToTime(breakStart),minToTime(breakEnd)],d7:[minToTime(breakEnd),minToTime(we)],d8:[minToTime(we),minToTime(we+15)]};
- tasks.filter(t=>t.work).forEach(t=>{
-   const span=fixed[t.id];if(span){t.start=span[0];t.end=span[1];occupied.push({start:timeToMin(t.start),end:timeToMin(t.end),id:t.id})}
- });
- const sleep=tasks.find(t=>t.id==='d18');if(sleep){sleep.start=sleepStartTarget;sleep.end=sleepEndTarget;sleep.duration=sleepDurationMinutes();sleep.detail='Target: '+sleepTargetLabel()+'.';sleep.overnight=sleepEnd<=sleepStart||sleepEnd>1440;occupied.push({start:sleepStart,end:sleepEnd,id:sleep.id});}
- tasks.filter(t=>!t.work&&t.id!=='d18').sort((a,b)=>timeToMin(a.start)-timeToMin(b.start)).forEach(t=>{
-   const dur=duration(t),preferred=timeToMin(t.start);let start=Math.max(6*60,preferred),placed=false;
-   for(let pass=0;pass<2&&!placed;pass++){
-     while(start+dur<=24*60){
-       const hit=occupied.find(o=>start<o.end&&start+dur>o.start);
-       if(!hit){placed=true;break;}
-       start=hit.end;
-     }
-     if(!placed){start=6*60;while(start<preferred&&start+dur<=24*60){const hit=occupied.find(o=>start<o.end&&start+dur>o.start);if(!hit){placed=true;break;}start=hit.end;}}
-   }
-   if(!placed)start=Math.max(6*60,24*60-dur);
-   t.start=minToTime(start);t.end=minToTime(start+dur);occupied.push({start,end:start+dur,id:t.id});
- });
-}
-function autoFitAll(){for(let i=0;i<7;i++)autoFitDay(i);savePlan();render();renderWeek()}
-function dayDateKey(i){let d=new Date();let offset=((d.getDay()+6)%7);d.setDate(d.getDate()-offset+i);return localDateKey(d)}
-function taskDoneKey(i,t){return dayDateKey(i)+'_'+t.id}
-function render(){
- const d=weekPlan[selectedDay],tasks=dayTasks(selectedDay);
- $('dailyDay').innerHTML=DAY_NAMES.map((n,i)=>'<option value="'+i+'">'+n+(i===((new Date().getDay()+6)%7)?' · Today':'')+'</option>').join('');
- $('dailyDay').value=String(selectedDay);
- $('dailyHeading').textContent=DAY_NAMES[selectedDay]+' · '+(d.workday?('Work '+formatRange(d.workStart,d.workEnd)):'Day off');
- let done=0;
- $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+formatRange(t.start,t.end)+(t.overnight?' (+1 day)':'')+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
- $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;const pct=Math.round(tasks.length?done/tasks.length*100:0);$('percent').textContent=pct+'% complete';$('overviewProgressFill').style.width=pct+'%';$('tabProgressFill').style.width=pct+'%';$('bottomTabs').style.setProperty('--completion',pct+'%');
- document.querySelectorAll('[data-plan-id]').forEach(el=>el.addEventListener('change',e=>{let t=tasks.find(x=>x.id===e.target.dataset.planId);if(!t)return;checks[taskDoneKey(selectedDay,t)]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
-}
-function moveTask(from,id,to,index){
- if(from===to){let a=weekPlan[from].tasks,at=a.findIndex(t=>t.id===id);if(at<0)return;let [t]=a.splice(at,1);a.splice(Math.max(0,Math.min(index,a.length)),0,t);}
- else{let a=weekPlan[from].tasks,at=a.findIndex(t=>t.id===id);if(at<0)return;let [t]=a.splice(at,1);if(t.work){weekPlan[to].workday=true;}weekPlan[to].tasks.splice(Math.max(0,Math.min(index,weekPlan[to].tasks.length)),0,t);}
- autoFitDay(from);if(to!==from)autoFitDay(to);savePlan();render();renderWeek();
-}
-function renderWeek(){
- $('weekPlanner').innerHTML=weekPlan.map((d,i)=>{
-  let tasks=dayTasks(i);
-  return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><span class="shift-summary">'+(d.workday?formatRange(d.workStart,d.workEnd):'Day off')+'</span></div>'+
-  tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+formatRange(t.start,t.end)+(t.overnight?' (+1 day)':'')+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
-  '<div class="day-actions"><button data-view-day="'+i+'">Open day</button><button data-add-day="'+i+'">＋ Add task</button></div></div>';
- }).join('');
- document.querySelectorAll('[data-workday]').forEach(el=>el.onchange=()=>{let i=Number(el.dataset.workday);weekPlan[i].workday=el.checked;autoFitDay(i);savePlan();render();renderWeek()});
- document.querySelectorAll('[data-shift-start],[data-shift-end]').forEach(el=>el.onchange=()=>{
-   const i=Number(el.dataset.shiftStart??el.dataset.shiftEnd),d=weekPlan[i];
-   const start=document.querySelector('[data-shift-start="'+i+'"]').value,end=document.querySelector('[data-shift-end="'+i+'"]').value;
-   if(!start||!end||timeToMin(end)<=timeToMin(start)){alert('Please enter a valid shift with an end time later than its start.');renderWeek();return;}
-   d.workStart=start;d.workEnd=end;autoFitDay(i);savePlan();render();renderWeek();
- });
- document.querySelectorAll('[data-view-day]').forEach(el=>el.onclick=()=>{selectedDay=Number(el.dataset.viewDay);document.querySelector('[data-tab="today"]').click();render()});
- document.querySelectorAll('[data-add-day]').forEach(el=>el.onclick=()=>{let name=prompt('What task would you like to add to '+DAY_NAMES[Number(el.dataset.addDay)]+'?');if(!name?.trim())return;let i=Number(el.dataset.addDay);weekPlan[i].tasks.push({id:'u'+Date.now(),name:name.trim(),detail:'Added to your weekly plan',start:'19:00',end:'19:30',duration:30,work:false});autoFitDay(i);savePlan();render();renderWeek()});
- document.querySelectorAll('[data-move-task]').forEach(el=>el.onchange=()=>{if(el.value==='')return;moveTask(Number(el.dataset.fromDay),el.dataset.moveTask,Number(el.value),weekPlan[Number(el.value)].tasks.length)});
- document.querySelectorAll('[data-drag-task]').forEach(el=>{
-  el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',JSON.stringify({id:el.dataset.dragTask,from:Number(el.dataset.fromDay)}));e.dataTransfer.effectAllowed='move'});
- });
- document.querySelectorAll('[data-drop-day]').forEach(el=>{
-  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
-  el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
-  el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');try{let x=JSON.parse(e.dataTransfer.getData('text/plain'));moveTask(x.from,x.id,Number(el.dataset.dropDay),weekPlan[Number(el.dataset.dropDay)].tasks.length)}catch(_){}});
- });
-}
-function loadShiftEditor(){
- const i=Number($('shiftDay').value),d=weekPlan[i];
- $('shiftWorking').checked=d.workday;
- $('workStart').value=d.workStart||workStart;
- $('workEnd').value=d.workEnd||workEnd;
- $('workStart').disabled=!d.workday;$('workEnd').disabled=!d.workday;
- $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+formatRange(d.workStart,d.workEnd):' is currently marked as a day off')+'.';
-}
-let updateCheckInProgress=false;
-let manualRefreshRequested=false;
-if('serviceWorker'in navigator){
- navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  if(manualRefreshRequested)location.reload();
- });
-}
-function waitForWorkerActivation(worker){
- if(!worker||worker.state==='activated'||worker.state==='redundant')return Promise.resolve();
- return new Promise(resolve=>{
-  const finish=()=>{worker.removeEventListener('statechange',check);resolve();};
-  const check=()=>{if(worker.state==='activated'||worker.state==='redundant')finish();};
-  worker.addEventListener('statechange',check);
-  setTimeout(finish,10000);
- });
-}
-$('checkUpdates').onclick=async()=>{
- const button=$('checkUpdates'),status=$('updateStatus');
- if(updateCheckInProgress)return;
- updateCheckInProgress=true;manualRefreshRequested=true;button.disabled=true;
- try{sessionStorage.setItem('dc_update_view',JSON.stringify({tab:document.querySelector('.tab.active')?.dataset.tab||'today',scrollY:window.scrollY,day:$('dailyDay')?.value}));}catch(_){}
- status.textContent='Checking for updates…';
- try{
-  if('serviceWorker'in navigator){
-   const registration=await navigator.serviceWorker.getRegistration();
-   if(registration){
-    await registration.update();
-    let worker=registration.installing||registration.waiting;
-    if(worker){
-     status.textContent='Installing update…';
-     if(registration.waiting)registration.waiting.postMessage({type:'SKIP_WAITING'});
-     await waitForWorkerActivation(worker);
-    }
-   }
-  }
-  status.textContent='Refreshing Daily Compass…';
- }catch(error){
-  status.textContent='Refreshing with the latest available version…';
- }
- location.reload();
-};
-$('themeMode').onchange=()=>{themeMode=$('themeMode').value;localStorage.setItem('dc_theme_mode',themeMode);applyAppearance();};
-document.querySelectorAll('[data-accent-choice]').forEach(button=>button.onclick=()=>{
- accentColor=button.dataset.accentChoice;
- localStorage.setItem('dc_accent_color',accentColor);
- applyAppearance();
+let workoutHistory=JSON.parse(localStorage.getItem('dc_workout_history')||'{}');
+let workoutPackages=JSON.parse(localStorage.getItem('dc_workout_packages')||'null');
+if(!workoutPackages||typeof workoutPackages!=='object')workoutPackages={};
+let selectedPackageDay=0,activeWorkoutId=null,activePackageItem=null,categoryFilter='All';
+const packageDefaults=()=>({items:[]});
+DAY_NAMES.forEach((_,i)=>{if(!workoutPackages[i])workoutPackages[i]=packageDefaults()});
+WORKOUT_LIBRARY.forEach(w=>{
+ const legacy=Array.isArray(workoutDays[w.id])?workoutDays[w.id]:[];
+ legacy.forEach(day=>{if(!workoutPackages[day].items.some(x=>x.exerciseId===w.id))workoutPackages[day].items.push({id:'pkg-'+w.id+'-'+day,exerciseId:w.id,mode:'working',weight:workoutStats[w.id]?.targetWeight||'',reps:workoutStats[w.id]?.targetReps||10,sets:3});});
 });
-applyAppearance();
-$('militaryTime').checked=militaryTime;
-$('militaryTime').onchange=()=>{militaryTime=$('militaryTime').checked;localStorage.setItem('dc_military_time',String(militaryTime));clock();render();renderWeek();loadShiftEditor()};
-$('shiftDay').onchange=loadShiftEditor;
-$('shiftWorking').onchange=()=>{$('workStart').disabled=!$('shiftWorking').checked;$('workEnd').disabled=!$('shiftWorking').checked};
-$('saveWork').onclick=()=>{
- const i=Number($('shiftDay').value),d=weekPlan[i],working=$('shiftWorking').checked;
- const start=$('workStart').value,end=$('workEnd').value;
- if(working&&(!start||!end||timeToMin(end)<=timeToMin(start))){alert('Please enter a valid shift with an end time later than its start.');return;}
- d.workday=working;if(working){d.workStart=start;d.workEnd=end;}
- autoFitDay(i);savePlan();render();renderWeek();loadShiftEditor();
- $('shiftSaved').textContent=DAY_NAMES[i]+' saved: '+(working?formatRange(start,end):'Day off')+'.';
-};
-const ROUTINE_GROUPS=[
- {name:'Work',hint:'Shift and commute · set in Settings',work:true},
- {name:'Sleep',hint:'Overnight rest target'},
- {name:'Meals',hint:'Breakfast, lunch and dinner',ids:['d2','d6','d12']},
- {name:'Personal care',hint:'Morning and evening hygiene',ids:['d0','d1','d3','d11','d17']},
- {name:'Exercise',hint:'Training, cardio or walking',ids:['d10']},
- {name:'Personal projects',hint:'Card business, learning or other personal goals',ids:['d13']},
- {name:'Hobbies / gaming',hint:'Personal downtime',ids:['d14']},
- {name:'Social time',hint:'Friends, family and connection',ids:['d15']},
- {name:'Daily reset',hint:'Decompress and prepare for tomorrow',ids:['d9','d16']}
-];
-function routineIds(group){return group.work?['d4','d5','d6','d7','d8']:group.name==='Sleep'?['d18']:group.ids}
-
-function renderWorkoutLibrary(){
- const root=$('workoutList');
- root.innerHTML=WORKOUT_LIBRARY.map(w=>{
-  const days=Array.isArray(workoutDays[w.id])?workoutDays[w.id]:[];
-  return '<div class="workout-card"><div class="workout-card-main"><strong>'+w.name+'</strong><small>'+w.equipment+' · '+w.type+'</small><div class="workout-days">'+DAY_NAMES.map((day,i)=>'<label class="workout-day"><input type="checkbox" data-workout-day="'+w.id+'" data-day="'+i+'" '+(days.includes(i)?'checked':'')+'> '+day.slice(0,3)+'</label>').join('')+'</div></div><button class="primary" data-open-workout="'+w.id+'">View guide</button></div>';
- }).join('');
- root.querySelectorAll('[data-workout-day]').forEach(el=>el.onchange=()=>{
-  const id=el.dataset.workoutDay,day=Number(el.dataset.day),days=Array.isArray(workoutDays[id])?[...workoutDays[id]]:[];
-  workoutDays[id]=el.checked?[...new Set([...days,day])]:days.filter(x=>x!==day);
-  saveWorkoutData();syncWorkoutTasks();for(let i=0;i<7;i++)autoFitDay(i);savePlan();render();renderWeek();renderWorkoutLibrary();
+function saveWorkoutData(){localStorage.setItem('dc_workout_days',JSON.stringify(workoutDays));localStorage.setItem('dc_workout_stats',JSON.stringify(workoutStats));localStorage.setItem('dc_workout_packages',JSON.stringify(workoutPackages));localStorage.setItem('dc_workout_history',JSON.stringify(workoutHistory))}
+function syncWorkoutTasks(){
+ weekPlan.forEach((day,i)=>{
+  day.tasks=day.tasks.filter(t=>!t.workout);
+  const items=workoutPackages[i]?.items||[];
+  if(items.length)day.tasks.push({id:'workout-package-'+i,name:'Workout · '+items.length+' exercise'+(items.length===1?'':'s'),detail:items.map(x=>WORKOUT_LIBRARY.find(w=>w.id===x.exerciseId)?.name||'Exercise').join(', '),start:'18:00',end:'19:00',duration:60,work:false,workout:true});
  });
- root.querySelectorAll('[data-open-workout]').forEach(el=>el.onclick=()=>openWorkout(el.dataset.openWorkout));
 }
-function openWorkout(id){
- const w=WORKOUT_LIBRARY.find(x=>x.id===id);if(!w)return;activeWorkoutId=id;
- const stats=workoutStats[id]||{targetWeight:'',targetReps:'',prWeight:'',prReps:'',prDate:''};
- $('workoutLibrary').style.display='none';$('workoutDetail').style.display='block';
- $('workoutDetailContent').innerHTML='<div class="kicker">Exercise · '+w.equipment+'</div><h2 style="margin:5px 0">'+w.name+'</h2><p class="workout-note">'+w.description+'</p>'+
- '<div class="workout-info-grid"><div class="workout-info-tile"><small>Primary muscle group</small><strong>Biceps</strong></div><div class="workout-info-tile"><small>Also involved</small><strong>Brachialis & forearms</strong></div></div>'+
- '<h3>Movement & form</h3><div class="workout-diagram"><svg viewBox="0 0 620 250" role="img" aria-label="Illustration of a standing dumbbell curl, showing the lowered and curled positions"><defs><marker id="curlArrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="var(--accent)" stroke-width="1.4"/></marker></defs><g fill="none" stroke="var(--muted)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="150" cy="35" r="17"/><path d="M150 53 L150 135 M150 76 L115 112 L115 178 M150 76 L185 112 L185 178 M150 135 L125 215 M150 135 L175 215"/></g><g fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"><path d="M115 112 L115 178"/><path d="M185 112 L185 178"/></g><g fill="none" stroke="var(--text)" stroke-width="5" stroke-linecap="round"><path d="M105 180 L125 180 M175 180 L195 180"/></g><g fill="none" stroke="var(--muted)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="455" cy="35" r="17"/><path d="M455 53 L455 135 M455 76 L420 112 L420 178 M455 76 L490 112 L490 178 M455 135 L430 215 M455 135 L480 215"/></g><g fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"><path d="M420 112 Q405 83 425 72 L445 82"/><path d="M490 112 Q505 83 485 72 L465 82"/></g><g stroke="var(--text)" stroke-width="5" stroke-linecap="round"><path d="M435 80 L455 80 M455 80 L475 80"/></g><g fill="var(--accent)" font-size="14" font-weight="700"><text x="150" y="242" text-anchor="middle">1 · Lowered</text><text x="455" y="242" text-anchor="middle">2 · Curled</text></g><path d="M240 118 C285 55 335 55 380 118" stroke="var(--accent)" stroke-width="2.5" fill="none" marker-end="url(#curlArrow)"/></svg><div class="muted small">Conceptual movement guide: lower the dumbbells under control, then curl without swinging.</div></div>'+
- '<h3>How to perform it</h3><ol class="workout-note">'+w.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol><p class="workout-note"><strong>Form cues:</strong> '+w.form+'</p><p class="workout-note"><strong>Suggested starting volume:</strong> '+w.sets+'</p>'+
- '<h3>Targets & personal records</h3><p class="workout-note">Set a working weight and rep goal, then record your best completed weight and reps. These values are saved on this device.</p>'+
- '<div class="workout-fields"><label>Target weight (lb)<input id="curlTargetWeight" type="number" min="0" step="0.5" value="'+esc(String(stats.targetWeight??''))+'"></label><label>Target reps<input id="curlTargetReps" type="number" min="1" step="1" value="'+esc(String(stats.targetReps??''))+'"></label><label>Personal record weight (lb)<input id="curlPrWeight" type="number" min="0" step="0.5" value="'+esc(String(stats.prWeight??''))+'"></label><label>Reps at that weight<input id="curlPrReps" type="number" min="0" step="1" value="'+esc(String(stats.prReps??''))+'"></label><label style="grid-column:1/-1">PR date<input id="curlPrDate" type="date" value="'+esc(String(stats.prDate??''))+'"></label></div><button class="primary" id="saveCurlStats">Save workout stats</button><span class="muted small" id="curlSaved" style="margin-left:8px"></span>';
- $('saveCurlStats').onclick=()=>{
-  const targetWeight=$('curlTargetWeight').value,targetReps=$('curlTargetReps').value,prWeight=$('curlPrWeight').value,prReps=$('curlPrReps').value,prDate=$('curlPrDate').value;
-  if((targetWeight!==''&&Number(targetWeight)<0)||(targetReps!==''&&Number(targetReps)<1)||(prWeight!==''&&Number(prWeight)<0)||(prReps!==''&&Number(prReps)<0)){alert('Enter a valid non-negative weight and a positive rep target.');return;}
-  workoutStats[id]={targetWeight,targetReps,prWeight,prReps,prDate};localStorage.setItem('dc_workout_stats',JSON.stringify(workoutStats));$('curlSaved').textContent='Saved on this device.';
+function escWorkout(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function exerciseById(id){return WORKOUT_LIBRARY.find(w=>w.id===id)}
+function renderWorkoutLibrary(){
+ const q=($('exerciseSearch')?.value||'').toLowerCase().trim(),cat=$('exerciseCategory')?.value||'All';
+ $('workoutList').innerHTML=WORKOUT_LIBRARY.filter(w=>(cat==='All'||w.categories.includes(cat))&&(!q||(w.name+' '+w.categories.join(' ')+' '+w.primary).toLowerCase().includes(q))).map(w=>'<div class="exercise-tile"><strong>'+w.name+'</strong><small>'+w.categories.join(' · ')+' · '+w.equipment+'</small><p class="muted small">'+w.primary+'</p><button class="primary" data-add-exercise="'+w.id+'">＋ Add to '+DAY_NAMES[selectedPackageDay].slice(0,3)+'</button> <button data-guide-exercise="'+w.id+'">Guide</button></div>').join('')||'<p class="muted small">No exercises match that filter.</p>';
+ document.querySelectorAll('[data-add-exercise]').forEach(b=>b.onclick=()=>addExerciseToPackage(b.dataset.addExercise));
+ document.querySelectorAll('[data-guide-exercise]').forEach(b=>b.onclick=()=>openWorkout(b.dataset.guideExercise));
+}
+function addExerciseToPackage(id){
+ const w=exerciseById(id);if(!w)return;
+ const items=workoutPackages[selectedPackageDay].items;
+ if(items.some(x=>x.exerciseId===id)){alert(w.name+' is already in this day’s package.');return;}
+ const stats=workoutStats[id]||{};
+ items.push({id:'pkg-'+id+'-'+Date.now(),exerciseId:id,mode:'working',weight:stats.targetWeight||'',reps:stats.targetReps||10,sets:3});
+ saveWorkoutData();syncWorkoutTasks();autoFitDay(selectedPackageDay);savePlan();renderWeek();renderWorkoutPackages();renderWorkoutLibrary();
+}
+function movePackageItem(day,id,delta){
+ const a=workoutPackages[day].items,i=a.findIndex(x=>x.id===id),j=i+delta;if(i<0||j<0||j>=a.length)return;
+ [a[i],a[j]]=[a[j],a[i]];saveWorkoutData();renderWorkoutPackages();
+}
+function removePackageItem(day,id){
+ workoutPackages[day].items=workoutPackages[day].items.filter(x=>x.id!==id);saveWorkoutData();syncWorkoutTasks();autoFitDay(day);savePlan();renderWeek();renderWorkoutPackages();
+}
+function getRecommendation(item){
+ const id=item.exerciseId,logs=(workoutHistory[id]||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)),recent=logs.slice(0,3);
+ const pr=Number(workoutStats[id]?.prWeight)||0,base=Number(item.weight)||Number(workoutStats[id]?.targetWeight)||0,reps=Number(item.reps)||8;
+ if(!recent.length&&!pr)return {weight:base,reps,reason:'Log a baseline workout first. You can set your own starting weight and reps.'};
+ const latest=recent[0],lastWeight=Number(latest?.sets?.[0]?.weight)||base,lastReps=Math.max(0,...(latest?.sets||[]).map(s=>Number(s.reps)||0));
+ if(recent.length>=2&&recent.slice(0,2).every(l=>l.sets?.length&&(l.sets.every(s=>Number(s.reps)>=reps))))return {weight:Math.min(pr||Infinity,Math.max(base,lastWeight)*1.025),reps,reason:'You reached your rep target in each of your last two logged sessions. A small increase may be appropriate.'};
+ if(pr&&lastWeight>=pr*.9)return {weight:Math.min(pr,lastWeight),reps:Math.max(3,Math.min(reps,6)),reason:'You are close to your logged PR. Keep reps lower and avoid a max-effort attempt.'};
+ return {weight:base||lastWeight,reps,reason:'Recent performance does not yet justify increasing the load. Repeat a controlled working weight.'};
+}
+function renderWorkoutPackages(){
+ $('packageDayTabs').innerHTML=DAY_NAMES.map((n,i)=>'<button class="'+(i===selectedPackageDay?'active':'')+'" data-package-day="'+i+'">'+n.slice(0,3)+'</button>').join('');
+ document.querySelectorAll('[data-package-day]').forEach(b=>b.onclick=()=>{selectedPackageDay=Number(b.dataset.packageDay);renderWorkoutPackages();renderWorkoutLibrary()});
+ const items=workoutPackages[selectedPackageDay].items;
+ $('packageContent').innerHTML='<div class="muted small">'+DAY_NAMES[selectedPackageDay]+' · '+items.length+' exercise'+(items.length===1?'':'s')+'</div>'+
+ (items.length?items.map((it,i)=>{const w=exerciseById(it.exerciseId),rec=getRecommendation(it);return '<div class="package-item"><div class="package-item-main"><strong>'+w.name+'</strong><div class="muted small">'+w.categories.join(' · ')+'</div><div class="mode-switch"><button data-mode="'+it.id+'" data-value="working" class="'+(it.mode==='working'?'active':'')+'">Working Sets</button><button data-mode="'+it.id+'" data-value="overload" class="'+(it.mode==='overload'?'active':'')+'">Progressive Overload</button></div><div class="recommendation"><strong>'+(it.mode==='overload'?'Suggested session':'Working-set plan')+': '+(it.mode==='overload'?rec.weight:it.weight||'—')+' lb × '+(it.mode==='overload'?rec.reps:it.reps)+' reps</strong><div class="muted small">'+(it.mode==='overload'?rec.reason:'Comfortable repeatable load. Adjust to maintain controlled form.')+'</div></div><div class="package-fields"><label>Sets<input type="number" min="1" max="10" data-package-field="'+it.id+'" data-field="sets" value="'+it.sets+'"></label><label>Weight (lb)<input type="number" min="0" step=".5" data-package-field="'+it.id+'" data-field="weight" value="'+escWorkout(it.weight)+'"></label><label>Reps<input type="number" min="1" max="50" data-package-field="'+it.id+'" data-field="reps" value="'+it.reps+'"></label></div><button class="primary" style="margin-top:9px" data-log="'+it.id+'">Log completed sets</button></div><div class="package-item-controls"><button data-up="'+it.id+'" '+(i===0?'disabled':'')+'>↑</button><button data-down="'+it.id+'" '+(i===items.length-1?'disabled':'')+'>↓</button><button class="danger" data-remove="'+it.id+'">Remove</button></div></div>'}).join(''):'<p class="muted small">No exercises added yet. Choose movements from the library above.</p>')+
+ '<div id="trainingLogger"></div><div id="packageHistory"></div>';
+ document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const it=items.find(x=>x.id===b.dataset.mode);if(it){it.mode=b.dataset.value;saveWorkoutData();renderWorkoutPackages()}});
+ document.querySelectorAll('[data-package-field]').forEach(el=>el.onchange=()=>{const it=items.find(x=>x.id===el.dataset.packageField);if(!it)return;it[el.dataset.field]=el.value;saveWorkoutData();renderWorkoutPackages()});
+ document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>movePackageItem(selectedPackageDay,b.dataset.up,-1));
+ document.querySelectorAll('[data-down]').forEach(b=>b.onclick=()=>movePackageItem(selectedPackageDay,b.dataset.down,1));
+ document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>removePackageItem(selectedPackageDay,b.dataset.remove));
+ document.querySelectorAll('[data-log]').forEach(b=>b.onclick=()=>openTrainingLogger(b.dataset.log));
+ const logs=items.flatMap(it=>(workoutHistory[it.exerciseId]||[]).slice(0,2).map(l=>({name:exerciseById(it.exerciseId).name,log:l}))).sort((a,b)=>b.log.date.localeCompare(a.log.date)).slice(0,6);
+ $('packageHistory').innerHTML=logs.length?'<h4>Recent training history</h4>'+logs.map(x=>'<div class="history-row"><strong>'+x.name+'</strong> · '+x.log.date+' · '+x.log.sets.map(s=>s.weight+' lb × '+s.reps).join(', ')+'</div>').join(''):'';
+}
+function openTrainingLogger(packageId){
+ const it=workoutPackages[selectedPackageDay].items.find(x=>x.id===packageId);if(!it)return;
+ const rec=getRecommendation(it),w=exerciseById(it.exerciseId),count=Math.max(1,Math.min(10,Number(it.sets)||3)),load=it.mode==='overload'?rec.weight:it.weight;
+ $('trainingLogger').innerHTML='<div class="training-log"><h4>Log '+w.name+'</h4><p class="muted small">Enter the weight and reps you actually completed for each set.</p>'+Array.from({length:count},(_,i)=>'<div class="training-log-row"><strong>Set '+(i+1)+'</strong><label>Weight (lb)<input type="number" min="0" step=".5" data-log-weight value="'+escWorkout(load)+'"></label><label>Reps<input type="number" min="0" max="100" data-log-reps value="'+escWorkout(it.reps)+'"></label></div>').join('')+'<button class="primary" id="saveTrainingLog">Save completed workout</button> <button id="cancelTrainingLog">Cancel</button></div>';
+ $('cancelTrainingLog').onclick=()=>$('trainingLogger').innerHTML='';
+ $('saveTrainingLog').onclick=()=>{
+  const weights=[...document.querySelectorAll('[data-log-weight]')],reps=[...document.querySelectorAll('[data-log-reps]')];
+  const sets=weights.map((el,i)=>({weight:Number(el.value),reps:Number(reps[i].value)}));
+  if(sets.some(s=>!Number.isFinite(s.weight)||s.weight<0||!Number.isInteger(s.reps)||s.reps<0)){alert('Enter valid completed weights and reps.');return;}
+  const date=new Date().toISOString().slice(0,10);(workoutHistory[it.exerciseId]??=[]).unshift({date,sets});
+  const best=sets.reduce((a,b)=>b.weight>a.weight?b:a,sets[0]);
+  const st=workoutStats[it.exerciseId]||{};if(best.weight>Number(st.prWeight||0)||(best.weight===Number(st.prWeight||0)&&best.reps>Number(st.prReps||0)))workoutStats[it.exerciseId]={...st,prWeight:String(best.weight),prReps:String(best.reps),prDate:date};
+  saveWorkoutData();renderWorkoutPackages();alert('Workout saved. Your recommendations will use this session.');
  };
 }
-$('workoutBack').onclick=()=>{$('workoutDetail').style.display='none';$('workoutLibrary').style.display='block';activeWorkoutId=null};
-
+function openWorkout(id){
+ const w=exerciseById(id);if(!w)return;activeWorkoutId=id;
+ $('workoutLibrary').style.display='none';$('workoutPackages').style.display='none';$('workoutDetail').style.display='block';
+ const svg='<svg viewBox="0 0 520 180" role="img" aria-label="Exercise movement illustration"><g stroke="var(--muted)" stroke-width="7" stroke-linecap="round" fill="none"><circle cx="85" cy="35" r="15"/><path d="M85 52 L85 112 L65 160 M85 112 L105 160 M85 65 L55 88 M85 65 L115 88"/></g><g stroke="var(--accent)" stroke-width="8" stroke-linecap="round" fill="none"><path d="'+(w.visual==='push'?'M220 105 L270 105 L315 105 M220 105 L205 140 M315 105 L330 140':w.visual==='squat'?'M220 65 L260 115 L300 65 M260 115 L230 155 M260 115 L290 155':w.visual==='row'?'M220 65 L270 100 L315 65 M270 100 L300 55':w.visual==='overhead'?'M260 100 L260 35 L300 15':'M220 105 Q255 150 285 65 M285 65 L315 90')+'"/></g><path d="M360 125 Q405 35 455 90" stroke="var(--accent)" stroke-width="3" fill="none"/><text x="400" y="150" fill="var(--text)" font-size="13" text-anchor="middle">Movement path</text></svg>';
+ $('workoutDetailContent').innerHTML='<div class="kicker">'+w.type+' · '+w.equipment+'</div><h2>'+w.name+'</h2><div class="guide-visual">'+svg+'<p class="muted small">'+w.moves+'</p></div><div class="guide-columns"><div class="workout-info-tile"><small>Primary muscles</small><strong>'+w.primary+'</strong></div><div class="workout-info-tile"><small>Secondary muscles</small><strong>'+w.secondary+'</strong></div></div><h3>Starting position</h3><p class="workout-note">'+w.start+'</p><h3>Movement steps</h3><ol class="workout-note">'+w.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol><h3>What moves and what stays still</h3><p class="workout-note">'+w.moves+'</p><h3>Common mistakes</h3><p class="workout-note">'+w.mistakes+'</p><h3>Personal records</h3><div class="workout-fields"><label>PR weight (lb)<input id="guidePrWeight" type="number" min="0" step=".5" value="'+escWorkout(workoutStats[id]?.prWeight||'')+'"></label><label>Reps at PR<input id="guidePrReps" type="number" min="0" value="'+escWorkout(workoutStats[id]?.prReps||'')+'"></label><label>PR date<input id="guidePrDate" type="date" value="'+escWorkout(workoutStats[id]?.prDate||'')+'"></label></div><button class="primary" id="saveGuidePr">Save PR</button><span id="guidePrSaved" class="muted small"></span>';
+ $('saveGuidePr').onclick=()=>{const prWeight=$('guidePrWeight').value,prReps=$('guidePrReps').value,prDate=$('guidePrDate').value;if(prWeight!==''&&Number(prWeight)<0||prReps!==''&&Number(prReps)<0){alert('Enter a non-negative PR.');return;}workoutStats[id]={...(workoutStats[id]||{}),prWeight,prReps,prDate};saveWorkoutData();$('guidePrSaved').textContent='Saved on this device.'};
+}
+$('workoutBack').onclick=()=>{$('workoutDetail').style.display='none';$('workoutLibrary').style.display='block';$('workoutPackages').style.display='block';activeWorkoutId=null};
+$('exerciseSearch').oninput=renderWorkoutLibrary;$('exerciseCategory').onchange=renderWorkoutLibrary;
 function renderCore(){
  const builtInRows=ROUTINE_GROUPS.map(g=>{
   const ids=routineIds(g),key=g.work?'work':g.name;
@@ -916,7 +818,7 @@ $('saveSleep').onclick=()=>{
  $('sleepSaved').textContent='Saved sleep target: '+sleepTargetLabel()+'.';
 };
 $('dailyDay').value=String(selectedDay);
-syncCoreTasks();syncWorkoutTasks();autoFitAll();renderCore();renderWorkoutLibrary();loadShiftEditor();
+syncCoreTasks();syncWorkoutTasks();autoFitAll();renderCore();renderWorkoutLibrary();renderWorkoutPackages();loadShiftEditor();
 restoreUpdateView();
 
 
