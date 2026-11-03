@@ -163,7 +163,7 @@ main{padding-bottom:100px}
 body{background:radial-gradient(ellipse at 50% -20%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 48%),var(--bg);color:var(--text);transition:background .2s,color .2s}
 .app-header{max-width:1040px;padding:22px 16px 10px;margin:auto}
 .app-brand{display:flex;align-items:center;gap:11px}
-.brand-mark{width:39px;height:39px;display:grid;place-items:center;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);font-size:13px;font-weight:800;letter-spacing:.04em}
+.brand-mark{width:46px;height:46px;display:block;object-fit:contain;flex:none;filter:drop-shadow(0 2px 5px rgba(0,0,0,.18))}
 .app-header h1{font-size:23px;letter-spacing:-.035em;line-height:1.15}
 .app-header p{font-size:13px;color:var(--muted);margin:7px 0 0 50px}
 .home-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.8fr);gap:22px;align-items:center;margin:8px 0 18px;padding:17px 19px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
@@ -213,7 +213,7 @@ body[data-mode="light"] .item.done .task{color:#8a96a6}
 </head>
 <body>
 <header class="app-header">
- <div class="app-brand"><span class="brand-mark">DC</span><div><div class="kicker">YOUR PERSONAL PLANNER</div><h1>Daily Compass</h1></div></div>
+ <div class="app-brand"><img class="brand-mark" src="./compass-sunrise.svg" alt="Daily Compass sunrise compass logo"><div><div class="kicker">YOUR PERSONAL PLANNER</div><h1>Daily Compass</h1></div></div>
  <p>Make today count, one block at a time.</p>
 </header>
 <main>
