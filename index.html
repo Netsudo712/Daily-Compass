@@ -327,7 +327,7 @@ function syncCoreTasks(){
 }
 function dayTasks(i){return weekPlan[i].tasks.filter(t=>(!t.work||weekPlan[i].workday)&&(t.work||weekPlan[i].enabled?.[t.id]!==false))}
 function timeToMin(t){let [h,m]=t.split(':').map(Number);return h*60+m}
-function minToTime(n){n=Math.max(0,Math.min(1439,n));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
+function minToTime(n){n=((n%1440)+1440)%1440;return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')}
 function duration(t){return Math.max(10,Number(t.duration)||30)}
 function autoFitDay(i){
  const d=weekPlan[i],tasks=dayTasks(i),occupied=[];
@@ -421,7 +421,7 @@ const ROUTINE_GROUPS=[
  {name:'Meals',hint:'Breakfast, lunch and dinner',ids:['d2','d6','d12']},
  {name:'Personal care',hint:'Morning and evening hygiene',ids:['d0','d1','d3','d11','d17']},
  {name:'Exercise',hint:'Training, cardio or walking',ids:['d10']},
- {name:'Card business / projects',hint:'Dedicated focus time',ids:['d13']},
+ {name:'Personal projects',hint:'Card business, learning or other personal goals',ids:['d13']},
  {name:'Hobbies / gaming',hint:'Personal downtime',ids:['d14']},
  {name:'Social time',hint:'Friends, family and connection',ids:['d15']},
  {name:'Daily reset',hint:'Decompress and prepare for tomorrow',ids:['d9','d16']}
