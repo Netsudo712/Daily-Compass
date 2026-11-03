@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Daily Compass</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#0b1220;--panel:#131e30;--panel2:#1a2940;--text:#edf3fb;--muted:#9aabc1;--accent:#83b7ff;--line:#293951;--green:#73d6a0}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#101d31,#0b1220 55%);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:25px 18px 16px;max-width:900px;margin:auto}h1{margin:0;font-size:27px}header p{color:var(--muted);margin:5px 0}
+main{max-width:900px;margin:auto;padding:0 16px 45px}.top{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin:8px 0 16px}
+.card{background:rgba(19,30,48,.94);border:1px solid var(--line);border-radius:17px;padding:16px}
+.kicker{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.09em}.big{font-size:30px;font-weight:750;margin:4px 0}.muted{color:var(--muted)}
+.track{height:9px;background:#27364b;border-radius:20px;overflow:hidden;margin:12px 0 6px}.fill{height:100%;width:0;background:var(--green);transition:width .2s}
+.tabs{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.tab,button{border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);padding:10px 13px;font:inherit;cursor:pointer}.tab.active{background:#25466f;border-color:#4776ae}
+.section{display:none}.section.active{display:block}.item{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}
+.item input{width:19px;height:19px;margin:3px 0 0;accent-color:var(--green);flex:none}.item.done .task{color:#8496ad;text-decoration:line-through}
+.time{font-size:12px;color:var(--accent);font-weight:700;min-width:105px;padding-top:2px}.task{font-weight:600}.detail{font-size:13px;color:var(--muted);margin-top:3px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row input,.row select{background:#0c1728;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px;min-width:0}
+.row input[type=text]{flex:1}.row input[type=time]{width:125px}
+.day{padding:12px 0;border-bottom:1px solid var(--line)}.day strong{display:inline-block;width:105px}.pill{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:4px 9px;color:var(--muted);font-size:12px;margin:3px}
+.small{font-size:13px}.notice{background:#172c43;border:1px solid #31577d;padding:12px;border-radius:12px;color:#cfe2fa;font-size:13px;line-height:1.5}
+button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:#3b2630;border-color:#68404e}
+@media(max-width:600px){.top{grid-template-columns:1fr 1fr}.time{min-width:88px;font-size:11px}.item{gap:8px}.big{font-size:25px}}
+</style>
+</head>
+<body>
+<header><h1>Daily Compass</h1><p>A calmer, more consistent day — one block at a time.</p></header>
+<main>
+<div class="top">
+ <div class="card"><div class="kicker" id="todayLabel">Today</div><div class="big" id="clock">--:--</div><div class="muted small" id="dateLabel"></div></div>
+ <div class="card"><div class="kicker">Today's progress</div><div class="big"><span id="doneCount">0</span>/<span id="totalCount">0</span></div><div class="track"><div class="fill" id="progress"></div></div><div class="muted small" id="percent">0% complete</div></div>
+</div>
+<div class="notice">Your standard workday is 8:30 AM–5:00 PM. The 15-minute commute each way is based on your stated 30-minute total. On variable-shift days, use Settings to change the work block.</div>
+<nav class="tabs">
+ <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="settings">Settings</button>
+</nav>
+<section class="section active" id="today">
+ <div class="card"><div class="row" style="justify-content:space-between"><div><div class="kicker">Your daily plan</div><strong>Check off each block as you go</strong></div><button id="reset">Reset today</button></div><div id="schedule"></div></div>
+ <div class="card" style="margin-top:12px"><div class="kicker">Add a one-off task</div><div class="row" style="margin-top:9px"><input id="newTask" type="text" placeholder="e.g. Call a friend"><input id="newTime" type="time" value="20:00"><button class="primary" id="addTask">Add</button></div></div>
+</section>
+<section class="section" id="week"><div class="card"><div class="kicker">Weekly rhythm</div><h3>Keep the week balanced</h3><div id="weekly"></div><p class="muted small">Treat this as a guide. Swap days around when work or life gets busy.</p></div></section>
+<section class="section" id="settings">
+ <div class="card"><div class="kicker">Variable work schedule</div><h3>Adjust your usual work block</h3><div class="row"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save work hours</button></div><p class="muted small">This updates the work block in your daily plan. Your commute and other blocks remain flexible.</p>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+ <div class="kicker">Reminders</div><p class="muted small">Allow notifications to receive a reminder near the start of a scheduled block while this app is open. Browser and phone settings may limit delivery in the background.</p><button id="notify">Enable reminders</button><span class="muted small" id="notifyStatus"></span>
+ <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+ <div class="kicker">Your sleep target</div><p>11:00 PM–7:00 AM · 8 hours</p>
+ <button class="danger" id="clear">Clear saved checkmarks and custom tasks</button></div>
+</section>
+</main>
+<script>
+const defaults=[
+ ['07:00','07:15','Wake up, make bed & hydrate','Start gently; avoid scrolling.'],
+ ['07:15','07:45','Shower and get ready','Hygiene, clothes, essentials.'],
+ ['07:45','08:00','Breakfast','Eat and drink water.'],
+ ['08:00','08:15','Pack up and prepare','Check what you need for work.'],
+ ['08:15','08:30','Commute to work','15 minutes.'],
+ ['08:30','12:00','Work — focus block 1','Prioritize the most important work.'],
+ ['12:00','12:30','Lunch and mental break','Step away from your work if possible.'],
+ ['12:30','17:00','Work — focus block 2','Wrap up and note tomorrow’s priorities.'],
+ ['17:00','17:15','Commute home','15 minutes.'],
+ ['17:15','17:45','Decompress and snack','Change clothes; take a breather.'],
+ ['17:45','18:45','Exercise','Strength, cardio, or a walk depending on the day.'],
+ ['18:45','19:15','Shower and recover','Cool down and reset.'],
+ ['19:15','19:45','Dinner','A proper meal and a little downtime.'],
+ ['19:45','20:45','Personal projects','Business, learning, or an important personal goal.'],
+ ['20:45','21:45','Hobbies and gaming','Enjoy guilt-free leisure time.'],
+ ['21:45','22:15','Social time','Friends, family, calls, or messages.'],
+ ['22:15','22:40','Prepare for tomorrow','Clothes, bag, quick tidy, top priorities.'],
+ ['22:40','23:00','Wind down','Dim lights; keep demanding tasks off the list.'],
+ ['23:00','23:59','Sleep','Target: eight hours.']
+];
+const weekly=[
+ ['Monday','Strength training','Business / personal project'],
+ ['Tuesday','Cardio or brisk walk','Hobbies / gaming'],
+ ['Wednesday','Strength training','Business / personal project'],
+ ['Thursday','Cardio or brisk walk','Social time'],
+ ['Friday','Strength or optional recovery','Free evening'],
+ ['Saturday','Longer workout or outdoor activity','Projects + social plans'],
+ ['Sunday','Rest, gentle walk','Weekly review + prepare for Monday']
+];
+let custom=JSON.parse(localStorage.getItem('dc_custom')||'[]');
+let checks=JSON.parse(localStorage.getItem('dc_checks')||'{}');
+let workStart=localStorage.getItem('dc_start')||'08:30', workEnd=localStorage.getItem('dc_end')||'17:00';
+let notified=new Set();
+const $=id=>document.getElementById(id);
+function todayKey(){return new Date().toISOString().slice(0,10)}
+function render(){
+ $('workStart').value=workStart;$('workEnd').value=workEnd;
+ let list=defaults.map((x,i)=>({id:'d'+i,start:x[0],end:x[1],name:x[2],detail:x[3]}));
+ list[5].start=workStart;list[7].end=workEnd;
+ list[4].start=shift(workStart,-15);list[4].end=workStart;
+ list[8].start=workEnd;list[8].end=shift(workEnd,15);
+ list[9].start=shift(workEnd,15);list[9].end=shift(workEnd,45);
+ list[10].start=shift(workEnd,45);list[10].end=shift(workEnd,105);
+ list[11].start=shift(workEnd,105);list[11].end=shift(workEnd,135);
+ list[12].start=shift(workEnd,135);list[12].end=shift(workEnd,165);
+ list[13].start=shift(workEnd,165);list[13].end=shift(workEnd,225);
+ list[14].start=shift(workEnd,225);list[14].end=shift(workEnd,285);
+ list[15].start=shift(workEnd,285);list[15].end=shift(workEnd,315);
+ list[16].start=shift(workEnd,315);list[16].end=shift(workEnd,340);
+ list[17].start=shift(workEnd,340);list[17].end=shift(workEnd,360);
+ list=[...list,...custom.map((x,i)=>({...x,id:'c'+i,detail:'One-off task'}))].sort((a,b)=>a.start.localeCompare(b.start));
+ const key=todayKey();let done=0;
+ $('schedule').innerHTML=list.map(x=>{let checked=!!checks[key+'_'+x.id];if(checked)done++;return `<div class="item ${checked?'done':''}"><input type="checkbox" data-id="${x.id}" ${checked?'checked':''}><div class="time">${x.start}–${x.end}</div><div><div class="task">${esc(x.name)}</div><div class="detail">${esc(x.detail)}</div></div></div>`}).join('');
+ $('doneCount').textContent=done;$('totalCount').textContent=list.length;$('progress').style.width=(list.length?done/list.length*100:0)+'%';$('percent').textContent=Math.round(list.length?done/list.length*100:0)+'% complete';
+ document.querySelectorAll('[data-id]').forEach(el=>el.addEventListener('change',e=>{checks[key+'_'+e.target.dataset.id]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
+ $('weekly').innerHTML=weekly.map(x=>`<div class="day"><strong>${x[0]}</strong><span class="pill">${x[1]}</span><span class="pill">${x[2]}</span></div>`).join('');
+}
+function shift(t,m){let [h,n]=t.split(':').map(Number);let d=new Date(2000,0,1,h,n+m);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab,.section').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')}));
+$('addTask').onclick=()=>{let name=$('newTask').value.trim();if(!name)return;let t=$('newTime').value||'20:00';custom.push({start:t,end:shift(t,30),name,detail:'One-off task'});localStorage.setItem('dc_custom',JSON.stringify(custom));$('newTask').value='';render()};
+$('reset').onclick=()=>{if(confirm('Reset today’s checkmarks?')){Object.keys(checks).filter(k=>k.startsWith(todayKey()+'_')).forEach(k=>delete checks[k]);localStorage.setItem('dc_checks',JSON.stringify(checks));render()}};
+$('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').value;if(!workStart||!workEnd){alert('Enter both work times.');return}localStorage.setItem('dc_start',workStart);localStorage.setItem('dc_end',workEnd);render()};
+$('clear').onclick=()=>{if(confirm('Clear all saved checkmarks and custom tasks?')){checks={};custom=[];localStorage.removeItem('dc_checks');localStorage.removeItem('dc_custom');render()}};
+$('notify').onclick=async()=>{if(!('Notification'in window)){$('notifyStatus').textContent=' Notifications are not supported in this browser.';return}let p=await Notification.requestPermission();$('notifyStatus').textContent=p==='granted'?' Reminders enabled while the app is open.':' Permission not granted.'};
+function reminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;let d=new Date(),t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),key=todayKey()+'_'+t;if(notified.has(key))return;let all=defaults.map((x,i)=>({start:x[0],name:x[2]}));all[5].start=workStart;all[7].start=workEnd;all.forEach(x=>{if(x.start===t){new Notification('Daily Compass',{body:'Time for: '+x.name});notified.add(key)}})}
+render();clock();setInterval(clock,15000);setInterval(reminders,30000);
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
