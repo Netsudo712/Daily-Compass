@@ -553,6 +553,6 @@ syncCoreTasks();autoFitAll();renderCore();loadShiftEditor();
 autoFitAll();
 
 setInterval(clock,15000);setInterval(reminders,30000);
-if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 </script>
 </body></html>
