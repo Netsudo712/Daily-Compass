@@ -24,6 +24,29 @@ main{max-width:900px;margin:auto;padding:0 16px 45px}.top{display:grid;grid-temp
 .small{font-size:13px}.notice{background:#172c43;border:1px solid #31577d;padding:12px;border-radius:12px;color:#cfe2fa;font-size:13px;line-height:1.5}
 button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:#3b2630;border-color:#68404e}
 @media(max-width:600px){.top{grid-template-columns:1fr 1fr}.time{min-width:88px;font-size:11px}.item{gap:8px}.big{font-size:25px}}
+
+.streak-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.streak-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.streak-stat{background:#0d192a;border:1px solid var(--line);border-radius:13px;padding:13px}
+.streak-stat .big{font-size:27px}
+.streak-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.streak-controls select,.streak-controls input{background:#0c1728;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px;min-width:0}
+.streak-controls select{flex:1;min-width:140px}
+.zoom-btn.active{background:#25466f;border-color:#4776ae}
+.streak-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:12px}
+.streak-day{min-width:0;min-height:72px;padding:7px 3px;border:1px solid var(--line);border-radius:10px;background:#0d192a;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.streak-day .dow{font-size:10px;color:var(--muted);text-transform:uppercase}
+.streak-day .num{font-size:15px;font-weight:700}
+.streak-day .state{font-size:10px;color:var(--muted)}
+.streak-day.clean{background:#153629;border-color:#347a59}
+.streak-day.slip{background:#3a2630;border-color:#875064}
+.streak-day.future{opacity:.35;cursor:default}
+.streak-day.empty{visibility:hidden}
+.streak-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:12px}
+.legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:#73d6a0}
+.legend-dot.slip{background:#c77a91}.legend-dot.none{background:#53657b}
+@media(max-width:600px){.streak-day{min-height:62px}.streak-day .state{font-size:9px}.streak-day .num{font-size:14px}.streak-grid{gap:4px}}
+
 </style>
 </head>
 <body>
@@ -35,13 +58,48 @@ button.primary{background:#2d5d94;border-color:#477db8}button.danger{background:
 </div>
 <div class="notice">Your standard workday is 8:30 AM–5:00 PM. The 15-minute commute each way is based on your stated 30-minute total. On variable-shift days, use Settings to change the work block.</div>
 <nav class="tabs">
- <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="settings">Settings</button>
+ <button class="tab active" data-tab="today">Today</button><button class="tab" data-tab="week">Week</button><button class="tab" data-tab="streaks">Streaks</button><button class="tab" data-tab="settings">Settings</button>
 </nav>
 <section class="section active" id="today">
  <div class="card"><div class="row" style="justify-content:space-between"><div><div class="kicker">Your daily plan</div><strong>Check off each block as you go</strong></div><button id="reset">Reset today</button></div><div id="schedule"></div></div>
  <div class="card" style="margin-top:12px"><div class="kicker">Add a one-off task</div><div class="row" style="margin-top:9px"><input id="newTask" type="text" placeholder="e.g. Call a friend"><input id="newTime" type="time" value="20:00"><button class="primary" id="addTask">Add</button></div></div>
 </section>
 <section class="section" id="week"><div class="card"><div class="kicker">Weekly rhythm</div><h3>Keep the week balanced</h3><div id="weekly"></div><p class="muted small">Treat this as a guide. Swap days around when work or life gets busy.</p></div></section>
+
+<section class="section" id="streaks">
+ <div class="card">
+  <div class="kicker">Consistency & accountability</div>
+  <div class="streak-head"><div><h3 style="margin:5px 0">Streak Tracker</h3><div class="muted small">Track days you stayed on track — or log a day you slipped.</div></div></div>
+  <div class="streak-controls">
+   <select id="streakSelect" aria-label="Choose tracker"></select>
+   <button class="primary" id="deleteStreak" title="Delete selected tracker">Delete</button>
+  </div>
+  <div id="streakEmpty" class="notice" style="display:none">Create your first tracker below. For example: “Days without smoking” or “Days without impulse spending.”</div>
+  <div id="streakContent">
+   <div class="streak-stats">
+    <div class="streak-stat"><div class="kicker">Current streak</div><div class="big" id="currentStreak">0 days</div><div class="muted small">Since your last reset</div></div>
+    <div class="streak-stat"><div class="kicker">Longest streak</div><div class="big" id="bestStreak">0 days</div><div class="muted small">Your personal best</div></div>
+   </div>
+   <div class="streak-controls">
+    <button id="prevStreak">←</button>
+    <strong id="streakRange" style="flex:1;text-align:center">This week</strong>
+    <button id="nextStreak">→</button>
+    <button class="zoom-btn active" data-zoom="7">Week</button>
+    <button class="zoom-btn" data-zoom="30">Month</button>
+    <button class="zoom-btn" data-zoom="90">3 months</button>
+   </div>
+   <div class="muted small">Tap a day to cycle through Not logged → Clean day → Reset day. You can correct past dates too.</div>
+   <div class="streak-grid" id="streakGrid"></div>
+   <div class="streak-legend"><span><i class="legend-dot"></i> Clean day</span><span><i class="legend-dot slip"></i> Reset day</span><span><i class="legend-dot none"></i> Not logged</span></div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:12px">
+  <div class="kicker">Create another tracker</div>
+  <div class="row" style="margin-top:9px"><input id="streakName" type="text" placeholder="e.g. Days without smoking"><button class="primary" id="addStreak">Create tracker</button></div>
+  <p class="muted small">You can create a separate tracker for each habit or behavior you want to monitor. Your entries stay saved on this device.</p>
+ </div>
+</section>
+
 <section class="section" id="settings">
  <div class="card"><div class="kicker">Variable work schedule</div><h3>Adjust your usual work block</h3><div class="row"><label>Start <input type="time" id="workStart" value="08:30"></label><label>End <input type="time" id="workEnd" value="17:00"></label><button class="primary" id="saveWork">Save work hours</button></div><p class="muted small">This updates the work block in your daily plan. Your commute and other blocks remain flexible.</p>
  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
@@ -86,6 +144,9 @@ let custom=JSON.parse(localStorage.getItem('dc_custom')||'[]');
 let checks=JSON.parse(localStorage.getItem('dc_checks')||'{}');
 let workStart=localStorage.getItem('dc_start')||'08:30', workEnd=localStorage.getItem('dc_end')||'17:00';
 let notified=new Set();
+let streaks=JSON.parse(localStorage.getItem('dc_streaks')||'[]');
+let activeStreakId=localStorage.getItem('dc_active_streak')||'';
+let streakZoom=7, streakOffset=0;
 const $=id=>document.getElementById(id);
 function todayKey(){return new Date().toISOString().slice(0,10)}
 function render(){
@@ -110,6 +171,71 @@ function render(){
  document.querySelectorAll('[data-id]').forEach(el=>el.addEventListener('change',e=>{checks[key+'_'+e.target.dataset.id]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
  $('weekly').innerHTML=weekly.map(x=>`<div class="day"><strong>${x[0]}</strong><span class="pill">${x[1]}</span><span class="pill">${x[2]}</span></div>`).join('');
 }
+
+function localDateKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseDateKey(s){let [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12)}
+function addDaysKey(s,n){let d=parseDateKey(s);d.setDate(d.getDate()+n);return localDateKey(d)}
+function daysBetween(a,b){return Math.max(0,Math.round((parseDateKey(b)-parseDateKey(a))/86400000))}
+function saveStreaks(){localStorage.setItem('dc_streaks',JSON.stringify(streaks));localStorage.setItem('dc_active_streak',activeStreakId)}
+function selectedStreak(){return streaks.find(s=>s.id===activeStreakId)||null}
+function streakStats(s){
+ const slips=[...new Set(s.slipDates||[])].sort();
+ const anchor=slips.length?slips[slips.length-1]:s.createdDate;
+ const current=daysBetween(anchor,localDateKey());
+ let best=0, previous=s.createdDate;
+ slips.forEach(day=>{best=Math.max(best,daysBetween(previous,day));previous=day});
+ best=Math.max(best,daysBetween(previous,localDateKey()),current);
+ return {current,best};
+}
+function renderStreaks(){
+ const select=$('streakSelect'),empty=$('streakEmpty'),content=$('streakContent');
+ select.innerHTML=streaks.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>').join('');
+ if(!streaks.some(s=>s.id===activeStreakId))activeStreakId=streaks[0]?.id||'';
+ select.value=activeStreakId;
+ const s=selectedStreak();
+ empty.style.display=s?'none':'block';content.style.display=s?'block':'none';
+ $('deleteStreak').disabled=!s;
+ if(!s){$('currentStreak').textContent='0 days';$('bestStreak').textContent='0 days';$('streakGrid').innerHTML='';return}
+ const stats=streakStats(s);
+ $('currentStreak').textContent=stats.current+' '+(stats.current===1?'day':'days');
+ $('bestStreak').textContent=stats.best+' '+(stats.best===1?'day':'days');
+ document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.zoom)===streakZoom));
+ const today=localDateKey();
+ let start,end;
+ if(streakZoom===7){
+   const d=parseDateKey(today),weekday=(d.getDay()+6)%7;start=addDaysKey(today,-weekday+streakOffset*7);end=addDaysKey(start,6);
+ }else{end=addDaysKey(today,streakOffset*streakZoom);start=addDaysKey(end,-(streakZoom-1))}
+ const fmt=k=>parseDateKey(k).toLocaleDateString([],{month:'short',day:'numeric'});
+ $('streakRange').textContent=fmt(start)+' – '+fmt(end);
+ const count=streakZoom,days=Array.from({length:count},(_,i)=>addDaysKey(start,i));
+ $('streakGrid').innerHTML=days.map(k=>{
+   const date=parseDateKey(k),future=k>today,slip=(s.slipDates||[]).includes(k),clean=(s.cleanDates||[]).includes(k);
+   const state=slip?'slip':clean?'clean':'none';
+   const label=slip?'Reset':clean?'Clean':'Not logged';
+   const dayName=streakZoom===7?date.toLocaleDateString([],{weekday:'short'}):date.toLocaleDateString([],{weekday:'narrow'});
+   return '<button class="streak-day '+(slip?'slip ':clean?'clean ':'')+(future?'future':'')+'" data-streak-day="'+k+'" '+(future?'disabled':'')+' aria-label="'+fmt(k)+': '+label+'"><span class="dow">'+dayName+'</span><span class="num">'+date.getDate()+'</span><span class="state">'+label+'</span></button>';
+ }).join('');
+ document.querySelectorAll('[data-streak-day]').forEach(b=>b.addEventListener('click',()=>{
+   const day=b.dataset.streakDay,slips=s.slipDates||[],cleans=s.cleanDates||[];
+   const isSlip=slips.includes(day),isClean=cleans.includes(day);
+   if(!isSlip&&!isClean){s.cleanDates=[...cleans,day]}
+   else if(isClean){s.cleanDates=cleans.filter(x=>x!==day);s.slipDates=[...slips,day]}
+   else{s.slipDates=slips.filter(x=>x!==day)}
+   saveStreaks();renderStreaks();
+ }));
+}
+$('addStreak').onclick=()=>{
+ const name=$('streakName').value.trim();if(!name){alert('Enter a name for this tracker.');return}
+ const id='streak-'+Date.now(),today=localDateKey();
+ streaks.push({id,name,createdDate:today,cleanDates:[],slipDates:[]});activeStreakId=id;streakOffset=0;
+ $('streakName').value='';saveStreaks();renderStreaks();
+};
+$('streakSelect').onchange=e=>{activeStreakId=e.target.value;streakOffset=0;saveStreaks();renderStreaks()};
+$('deleteStreak').onclick=()=>{const s=selectedStreak();if(!s)return;if(confirm('Delete the tracker "'+s.name+'" and its history?')){streaks=streaks.filter(x=>x.id!==s.id);activeStreakId=streaks[0]?.id||'';saveStreaks();renderStreaks()}};
+$('prevStreak').onclick=()=>{streakOffset--;renderStreaks()};
+$('nextStreak').onclick=()=>{const today=localDateKey();let end=streakZoom===7?addDaysKey(today,((7-(parseDateKey(today).getDay()+6)%7)%7)):today;if(streakOffset<0)streakOffset++;else if(streakZoom===7&&addDaysKey(end,streakOffset*7+7)<=today)streakOffset++;else if(streakZoom!==7&&addDaysKey(today,(streakOffset+1)*streakZoom)<=today)streakOffset++;renderStreaks()};
+document.querySelectorAll('.zoom-btn').forEach(b=>b.addEventListener('click',()=>{streakZoom=Number(b.dataset.zoom);streakOffset=0;renderStreaks()}));
+
 function shift(t,m){let [h,n]=t.split(':').map(Number);let d=new Date(2000,0,1,h,n+m);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function clock(){let d=new Date();$('clock').textContent=d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});$('dateLabel').textContent=d.toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'});$('todayLabel').textContent='Your day';}
@@ -120,7 +246,7 @@ $('saveWork').onclick=()=>{workStart=$('workStart').value;workEnd=$('workEnd').v
 $('clear').onclick=()=>{if(confirm('Clear all saved checkmarks and custom tasks?')){checks={};custom=[];localStorage.removeItem('dc_checks');localStorage.removeItem('dc_custom');render()}};
 $('notify').onclick=async()=>{if(!('Notification'in window)){$('notifyStatus').textContent=' Notifications are not supported in this browser.';return}let p=await Notification.requestPermission();$('notifyStatus').textContent=p==='granted'?' Reminders enabled while the app is open.':' Permission not granted.'};
 function reminders(){if(!('Notification'in window)||Notification.permission!=='granted')return;let d=new Date(),t=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),key=todayKey()+'_'+t;if(notified.has(key))return;let all=defaults.map((x,i)=>({start:x[0],name:x[2]}));all[5].start=workStart;all[7].start=workEnd;all.forEach(x=>{if(x.start===t){new Notification('Daily Compass',{body:'Time for: '+x.name});notified.add(key)}})}
-render();clock();setInterval(clock,15000);setInterval(reminders,30000);
+render();renderStreaks();clock();setInterval(clock,15000);setInterval(reminders,30000);
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body></html>
