@@ -312,7 +312,7 @@ let selectedDay=(new Date().getDay()+6)%7;
 let weekPlan=JSON.parse(localStorage.getItem('dc_week_plan')||'null');
 function makeDay(i){
  const workday=i<5;
- const tasks=defaults.map((x,n)=>({id:'d'+n,name:x[2],detail:x[3],start:x[0],end:x[1],duration:Math.max(10,Math.round((new Date('2000-01-01T'+x[1])-new Date('2000-01-01T'+x[0]))/60000)),work:WORK_IDS.has('d'+n)}));
+ const tasks=defaults.map((x,n)=>({id:'d'+n,name:x[2],detail:x[3],start:x[0],end:x[1],duration:n===18?480:Math.max(10,Math.round((new Date('2000-01-01T'+x[1])-new Date('2000-01-01T'+x[0]))/60000)),overnight:n===18,work:WORK_IDS.has('d'+n)}));
  return {workday,workStart,workEnd,tasks,enabled:Object.fromEntries(tasks.map(t=>[t.id,true]))};
 }
 if(!weekPlan){weekPlan=DAY_NAMES.map((_,i)=>makeDay(i)); const oldCustom=JSON.parse(localStorage.getItem('dc_custom')||'[]'); const todayIndex=(new Date().getDay()+6)%7; oldCustom.forEach((x,n)=>weekPlan[todayIndex].tasks.push({...x,id:'legacy'+n,duration:30,work:false}));}
@@ -333,11 +333,13 @@ function autoFitDay(i){
  const d=weekPlan[i],tasks=dayTasks(i),occupied=[];
  const ws=timeToMin(d.workStart||workStart),we=timeToMin(d.workEnd||workEnd);
  const breakStart=Math.round((ws+we-30)/2),breakEnd=breakStart+30;
+ const sleepStart=Math.max(23*60,we+15),sleepEnd=sleepStart+480;
  const fixed={d4:[minToTime(ws-15),minToTime(ws)],d5:[minToTime(ws),minToTime(breakStart)],d6:[minToTime(breakStart),minToTime(breakEnd)],d7:[minToTime(breakEnd),minToTime(we)],d8:[minToTime(we),minToTime(we+15)]};
  tasks.filter(t=>t.work).forEach(t=>{
    const span=fixed[t.id];if(span){t.start=span[0];t.end=span[1];occupied.push({start:timeToMin(t.start),end:timeToMin(t.end),id:t.id})}
  });
- tasks.filter(t=>!t.work).sort((a,b)=>timeToMin(a.start)-timeToMin(b.start)).forEach(t=>{
+ const sleep=tasks.find(t=>t.id==='d18');if(sleep){sleep.start=minToTime(sleepStart);sleep.end=minToTime(sleepEnd);sleep.overnight=true;occupied.push({start:sleepStart,end:sleepEnd,id:sleep.id});}
+ tasks.filter(t=>!t.work&&t.id!=='d18').sort((a,b)=>timeToMin(a.start)-timeToMin(b.start)).forEach(t=>{
    const dur=duration(t),preferred=timeToMin(t.start);let start=Math.max(6*60,preferred),placed=false;
    for(let pass=0;pass<2&&!placed;pass++){
      while(start+dur<=24*60){
@@ -360,7 +362,7 @@ function render(){
  $('dailyDay').value=String(selectedDay);
  $('dailyHeading').textContent=DAY_NAMES[selectedDay]+' · '+(d.workday?('Work '+d.workStart+'–'+d.workEnd):'Day off');
  let done=0;
- $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+t.start+'–'+t.end+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
+ $('schedule').innerHTML=tasks.map(t=>{let checked=!!checks[taskDoneKey(selectedDay,t)];if(checked)done++;return '<div class="item '+(checked?'done':'')+'"><input type="checkbox" data-plan-id="'+esc(t.id)+'" '+(checked?'checked':'')+'><div class="time">'+t.start+'–'+t.end+(t.overnight?' (+1 day)':'')+'</div><div><div class="task">'+esc(t.name)+'</div><div class="detail">'+esc(t.detail||'')+'</div></div></div>'}).join('');
  $('doneCount').textContent=done;$('totalCount').textContent=tasks.length;$('progress').style.width=(tasks.length?done/tasks.length*100:0)+'%';$('percent').textContent=Math.round(tasks.length?done/tasks.length*100:0)+'% complete';
  document.querySelectorAll('[data-plan-id]').forEach(el=>el.addEventListener('change',e=>{let t=tasks.find(x=>x.id===e.target.dataset.planId);if(!t)return;checks[taskDoneKey(selectedDay,t)]=e.target.checked;localStorage.setItem('dc_checks',JSON.stringify(checks));render()}));
 }
@@ -373,7 +375,7 @@ function renderWeek(){
  $('weekPlanner').innerHTML=weekPlan.map((d,i)=>{
   let tasks=dayTasks(i);
   return '<div class="week-day" data-drop-day="'+i+'"><div class="week-day-head"><strong>'+DAY_NAMES[i]+'</strong><span class="shift-summary">'+(d.workday?d.workStart+'–'+d.workEnd:'Day off')+'</span></div>'+
-  tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+t.start+'–'+t.end+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
+  tasks.map((t,j)=>'<div class="plan-task '+(t.work?'work-fixed':'')+'" draggable="true" data-drag-task="'+esc(t.id)+'" data-from-day="'+i+'"><span class="drag-grip" aria-hidden="true">⠿</span><div class="plan-task-main"><strong>'+esc(t.name)+'</strong><small>'+t.start+'–'+t.end+(t.overnight?' (+1 day)':'')+(t.work?' · work commitment':'')+'</small></div><select aria-label="Move '+esc(t.name)+'" data-move-task="'+esc(t.id)+'" data-from-day="'+i+'"><option value="">Move…</option>'+DAY_NAMES.map((n,k)=>'<option value="'+k+'" '+(k===i?'disabled':'')+'>'+n+'</option>').join('')+'</select></div>').join('')+
   '<div class="day-actions"><button data-view-day="'+i+'">Open day</button><button data-add-day="'+i+'">＋ Add task</button></div></div>';
  }).join('');
  document.querySelectorAll('[data-workday]').forEach(el=>el.onchange=()=>{let i=Number(el.dataset.workday);weekPlan[i].workday=el.checked;autoFitDay(i);savePlan();render();renderWeek()});
@@ -429,7 +431,7 @@ function renderCore(){
  $('routineMatrix').innerHTML=ROUTINE_GROUPS.map(g=>{
   const ids=routineIds(g);
   return '<tr class="'+(g.work?'work-row':'')+'"><td><span class="activity-name">'+g.name+'</span><span class="activity-hint">'+g.hint+'</span></td>'+
-   DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+g.name+' on '+n+'" data-routine-group="'+(g.work?'work':g.name)+'" data-routine-day="'+i+'" '+(g.work?weekPlan[i].workday:ids.some(id=>weekPlan[i].enabled?.[id]!==false)?'checked':'')+'></td>').join('')+'</tr>';
+   DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+g.name+' on '+n+'" data-routine-group="'+(g.work?'work':g.name)+'" data-routine-day="'+i+'" '+(g.work?(weekPlan[i].workday?'checked':''):(ids.some(id=>weekPlan[i].enabled?.[id]!==false)?'checked':''))+'></td>').join('')+'</tr>';
  }).join('')+
  coreSubjects.map(s=>'<tr><td><span class="activity-name">'+esc(s.name)+'</span><span class="activity-hint">Custom activity · '+s.duration+' min</span></td>'+DAY_NAMES.map((n,i)=>'<td><input type="checkbox" aria-label="'+esc(s.name)+' on '+n+'" data-custom-core="'+s.id+'" data-custom-day="'+i+'" '+(s.days.includes(i)?'checked':'')+'></td>').join('')+'</tr>').join('');
  document.querySelectorAll('[data-routine-group]').forEach(el=>el.onchange=()=>{
