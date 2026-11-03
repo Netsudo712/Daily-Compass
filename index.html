@@ -561,25 +561,44 @@ function loadShiftEditor(){
  $('shiftSaved').textContent=DAY_NAMES[i]+(d.workday?' shift: '+formatRange(d.workStart,d.workEnd):' is currently marked as a day off')+'.';
 }
 let updateCheckInProgress=false;
-let reloadAfterWorkerUpdate=false;
+let manualRefreshRequested=false;
 if('serviceWorker'in navigator){
  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-  if(!reloadAfterWorkerUpdate){reloadAfterWorkerUpdate=true;location.reload();}
+  if(manualRefreshRequested)location.reload();
+ });
+}
+function waitForWorkerActivation(worker){
+ if(!worker||worker.state==='activated'||worker.state==='redundant')return Promise.resolve();
+ return new Promise(resolve=>{
+  const finish=()=>{worker.removeEventListener('statechange',check);resolve();};
+  const check=()=>{if(worker.state==='activated'||worker.state==='redundant')finish();};
+  worker.addEventListener('statechange',check);
+  setTimeout(finish,10000);
  });
 }
 $('checkUpdates').onclick=async()=>{
  const button=$('checkUpdates'),status=$('updateStatus');
  if(updateCheckInProgress)return;
- updateCheckInProgress=true;button.disabled=true;status.textContent='Checking for updates…';
+ updateCheckInProgress=true;manualRefreshRequested=true;button.disabled=true;
+ status.textContent='Checking for updates…';
  try{
-  if(!('serviceWorker'in navigator)){status.textContent='App updates are not supported in this browser.';return;}
-  const registration=await navigator.serviceWorker.getRegistration();
-  if(!registration){status.textContent='Update service is not ready. Try reopening the app online.';return;}
-  await registration.update();
-  if(registration.installing||registration.waiting){status.textContent='Update found. Installing now…';}
-  else{status.textContent='You’re up to date.';}
- }catch(error){status.textContent='Could not check right now. Connect to the internet and try again.';}
- finally{updateCheckInProgress=false;button.disabled=false;}
+  if('serviceWorker'in navigator){
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(registration){
+    await registration.update();
+    let worker=registration.installing||registration.waiting;
+    if(worker){
+     status.textContent='Installing update…';
+     if(registration.waiting)registration.waiting.postMessage({type:'SKIP_WAITING'});
+     await waitForWorkerActivation(worker);
+    }
+   }
+  }
+  status.textContent='Refreshing Daily Compass…';
+ }catch(error){
+  status.textContent='Refreshing with the latest available version…';
+ }
+ location.reload();
 };
 $('themeMode').onchange=()=>{themeMode=$('themeMode').value;localStorage.setItem('dc_theme_mode',themeMode);applyAppearance();};
 $('accentColor').onchange=()=>{accentColor=$('accentColor').value;localStorage.setItem('dc_accent_color',accentColor);applyAppearance();};
